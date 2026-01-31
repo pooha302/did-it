@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "931227350417",
+    "project_id": "did-it-102b0",
+    "storage_bucket": "did-it-102b0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:931227350417:android:739a64b2f7a45dd4071630",
+        "android_client_info": {
+          "package_name": "com.pooha302.didit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCY8U8-20wfcUPTMd6zb6zVT94MslAFIb8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
