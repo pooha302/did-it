@@ -67,13 +67,13 @@ class ActionView extends StatelessWidget {
             
             
             return Stack(
-              key: tutorialKey,
               clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
 
                 // Action Circle Background & Progress Fill
                 Container(
+                  key: tutorialKey,
                   width: size,
                   height: size,
                   decoration: BoxDecoration(

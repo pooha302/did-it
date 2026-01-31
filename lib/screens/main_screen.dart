@@ -133,15 +133,15 @@ class _MainScreenState extends State<MainScreen> {
       required String titleKey,
       required String descKey,
       CrossAxisAlignment crossAlign = CrossAxisAlignment.start,
+      ShapeLightFocus shape = ShapeLightFocus.RRect,
     }) {
-      final RenderBox renderBox = key.currentContext!.findRenderObject() as RenderBox;
-      final Offset offset = renderBox.localToGlobal(Offset.zero);
-      
       return TargetFocus(
         identify: id,
-        targetPosition: TargetPosition(renderBox.size, offset),
+        keyTarget: key,
         alignSkip: Alignment.bottomRight,
         enableOverlayTab: true,
+        shape: shape,
+        radius: 12,
         contents: [
           TargetContent(
             align: align,
@@ -171,6 +171,7 @@ class _MainScreenState extends State<MainScreen> {
       align: ContentAlign.bottom,
       titleKey: 'tutorial_record_title',
       descKey: 'tutorial_record_desc',
+      shape: ShapeLightFocus.Circle,
     ));
 
     targets.add(createTarget(
@@ -621,7 +622,7 @@ class _MainScreenState extends State<MainScreen> {
                                     child: ActionView(
                                       key: ValueKey('action_view_${action.id}'),
                                       action: action, 
-                                      // tutorialKey removed from here to avoid duplication error
+                                      tutorialKey: isCurrentCenter ? _actionViewKey : null,
                                       showTutorialHand: isCurrentCenter && _activeTutorialTargetId == "action_view",
                                     ),
                                   ),
@@ -630,17 +631,6 @@ class _MainScreenState extends State<MainScreen> {
                         },
                       ),
                       
-                      // Tutorial Target Layer (Stable Overlay)
-                      if (!_showStats)
-                        IgnorePointer(
-                          child: Center(
-                            child: SizedBox( // A stable target for the tutorial
-                              key: _actionViewKey, 
-                              width: 260, // Approximate ActionView size
-                              height: 260,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),

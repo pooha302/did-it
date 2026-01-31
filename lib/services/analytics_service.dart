@@ -1,3 +1,4 @@
+import 'package:didit/main.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 
@@ -5,7 +6,7 @@ class AnalyticsService {
   static final AnalyticsService instance = AnalyticsService._();
   AnalyticsService._();
 
-  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+  FirebaseAnalytics? get _analytics => isFirebaseInitialized ? FirebaseAnalytics.instance : null;
 
   // Mapping of common codepoints to names for better GA readable reports
   static const Map<int, String> _iconNameMap = {
@@ -38,8 +39,9 @@ class AnalyticsService {
   // 1. Reset Action
   Future<void> logResetAction(String actionId, String actionName) async {
     try {
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logEvent(
+      if (_analytics == null) return;
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logEvent(
         name: 'action_reset',
         parameters: {
           'action_id': actionId,
@@ -58,9 +60,10 @@ class AnalyticsService {
     required bool isPositiveGoal,
   }) async {
     try {
+      if (_analytics == null) return;
       final iconName = _iconNameMap[iconCodePoint] ?? 'unknown_$iconCodePoint';
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logEvent(
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logEvent(
         name: 'action_add',
         parameters: {
           'action_id': actionId,
@@ -76,8 +79,9 @@ class AnalyticsService {
   // 3 & 5. Delete Action with name
   Future<void> logDeleteAction(String actionId, String actionName) async {
     try {
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logEvent(
+      if (_analytics == null) return;
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logEvent(
         name: 'action_delete',
         parameters: {
           'action_id': actionId,
@@ -90,8 +94,9 @@ class AnalyticsService {
   // 6. Cloud Backup
   Future<void> logCloudBackup(String platform) async {
     try {
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logEvent(
+      if (_analytics == null) return;
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logEvent(
         name: 'cloud_backup',
         parameters: {
           'platform': platform,
@@ -103,8 +108,9 @@ class AnalyticsService {
   // 7. Goal Type Change (Thumb up/down)
   Future<void> logGoalTypeChange(String actionId, bool isPositive) async {
     try {
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logEvent(
+      if (_analytics == null) return;
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logEvent(
         name: 'action_goal_type_change',
         parameters: {
           'action_id': actionId,
@@ -117,8 +123,9 @@ class AnalyticsService {
   // 8. Action Toggle (Active/Inactive)
   Future<void> logActionToggle(String actionId, bool isActive) async {
     try {
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logEvent(
+      if (_analytics == null) return;
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logEvent(
         name: 'action_toggle_status',
         parameters: {
           'action_id': actionId,
@@ -131,16 +138,18 @@ class AnalyticsService {
   // 9. Reorder Actions
   Future<void> logReorderActions() async {
     try {
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logEvent(name: 'action_reorder');
+      if (_analytics == null) return;
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logEvent(name: 'action_reorder');
     } catch (_) {}
   }
 
   // 10. View Stats
   Future<void> logViewStats(String actionId) async {
     try {
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logEvent(
+      if (_analytics == null) return;
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logEvent(
         name: 'view_stats',
         parameters: {
           'action_id': actionId,
@@ -152,8 +161,9 @@ class AnalyticsService {
   // 11. Cloud Restore
   Future<void> logCloudRestore(String platform) async {
     try {
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logEvent(
+      if (_analytics == null) return;
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logEvent(
         name: 'cloud_restore',
         parameters: {
           'platform': platform,
@@ -165,8 +175,9 @@ class AnalyticsService {
   // 12. Language Change
   Future<void> logLanguageChange(String languageCode) async {
     try {
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logEvent(
+      if (_analytics == null) return;
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logEvent(
         name: 'language_change',
         parameters: {
           'language_code': languageCode,
@@ -178,9 +189,10 @@ class AnalyticsService {
   // 13. Tutorial Complete
   Future<void> logTutorialComplete(String screenName) async {
     try {
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      await _analytics.logTutorialComplete();
-      await _analytics.logEvent(
+      if (_analytics == null) return;
+      await _analytics!.setAnalyticsCollectionEnabled(true);
+      await _analytics!.logTutorialComplete();
+      await _analytics!.logEvent(
         name: 'tutorial_complete',
         parameters: {
           'screen_name': screenName,
