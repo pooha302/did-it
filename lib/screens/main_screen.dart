@@ -618,25 +618,31 @@ class _MainScreenState extends State<MainScreen> {
                           final isCurrentCenter = provider.activeActionIndex == index;
                           
                           return AnimatedCrossFade(
+                            key: ValueKey('crossfade_${action.id}'),
                             duration: const Duration(milliseconds: 300),
-                            firstChild: AnimatedScale(
-                              key: ValueKey('record_wrap_${action.id}'),
-                              scale: isCurrentCenter ? 1.0 : 0.9,
-                              duration: const Duration(milliseconds: 300),
-                              child: AnimatedOpacity(
-                                opacity: isCurrentCenter ? 1.0 : 0.5,
+                            alignment: Alignment.center,
+                            firstChild: SizedBox.expand(
+                              child: AnimatedScale(
+                                key: ValueKey('record_wrap_${action.id}'),
+                                scale: isCurrentCenter ? 1.0 : 0.9,
                                 duration: const Duration(milliseconds: 300),
-                                child: ActionView(
-                                  key: ValueKey('action_view_${action.id}'),
-                                  action: action, 
-                                  tutorialKey: isCurrentCenter ? _actionViewKey : null,
-                                  showTutorialHand: isCurrentCenter && _activeTutorialTargetId == "action_view",
+                                child: AnimatedOpacity(
+                                  opacity: isCurrentCenter ? 1.0 : 0.5,
+                                  duration: const Duration(milliseconds: 300),
+                                  child: ActionView(
+                                    key: ValueKey('action_view_${action.id}'),
+                                    action: action, 
+                                    tutorialKey: isCurrentCenter ? _actionViewKey : null,
+                                    showTutorialHand: isCurrentCenter && _activeTutorialTargetId == "action_view",
+                                  ),
                                 ),
                               ),
                             ),
-                            secondChild: ActionStatsView(
-                              key: ValueKey('stats_${action.id}'),
-                              action: action,
+                            secondChild: SizedBox.expand(
+                              child: ActionStatsView(
+                                key: ValueKey('stats_${action.id}'),
+                                action: action,
+                              ),
                             ),
                             crossFadeState: provider.showStats
                                 ? CrossFadeState.showSecond

@@ -83,6 +83,24 @@ class ActionData {
       history: Map<String, int>.from(json['history'] ?? {}),
     );
   }
+
+  ActionData copyWith({
+    int? count,
+    int? resetCredits,
+    int? goal,
+    bool? isActive,
+    bool? isPositiveGoal,
+    Map<String, int>? history,
+  }) {
+    return ActionData(
+      count: count ?? this.count,
+      resetCredits: resetCredits ?? this.resetCredits,
+      goal: goal ?? this.goal,
+      isActive: isActive ?? this.isActive,
+      isPositiveGoal: isPositiveGoal ?? this.isPositiveGoal,
+      history: history ?? Map.from(this.history),
+    );
+  }
 }
 
 final List<ActionConfig> ACTIONS = [

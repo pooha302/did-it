@@ -62,8 +62,20 @@ class ActionProvider with ChangeNotifier {
   }
 
   void setActiveActionIndex(int index) {
+    if (_activeActionIndex == index) return;
     _activeActionIndex = index;
+    _clampIndex();
     notifyListeners();
+  }
+
+  void _clampIndex() {
+    final actions = activeActions;
+    if (actions.isEmpty) {
+      _activeActionIndex = 0;
+    } else if (_activeActionIndex >= actions.length) {
+      _activeActionIndex = actions.length - 1;
+    }
+    if (_activeActionIndex < 0) _activeActionIndex = 0;
   }
   
 
@@ -182,6 +194,7 @@ class ActionProvider with ChangeNotifier {
     AnalyticsService.instance.logReorderActions();
 
     _saveData();
+    _clampIndex();
     notifyListeners();
   }
 
@@ -242,6 +255,7 @@ class ActionProvider with ChangeNotifier {
     AnalyticsService.instance.logDeleteAction(id, actionName);
 
     _saveData();
+    _clampIndex();
     notifyListeners();
   }
 
@@ -293,7 +307,7 @@ class ActionProvider with ChangeNotifier {
   void updateActionGoal(String id, int newGoal) {
     final state = _actionStates[id];
     if (state != null) {
-      state.goal = newGoal;
+      _actionStates[id] = state.copyWith(goal: newGoal);
       _saveData();
       notifyListeners();
     }
@@ -302,9 +316,9 @@ class ActionProvider with ChangeNotifier {
   void toggleGoalType(String id) {
     final state = _actionStates[id];
     if (state != null) {
-      state.isPositiveGoal = !state.isPositiveGoal;
+      _actionStates[id] = state.copyWith(isPositiveGoal: !state.isPositiveGoal);
       
-      AnalyticsService.instance.logGoalTypeChange(id, state.isPositiveGoal);
+      AnalyticsService.instance.logGoalTypeChange(id, _actionStates[id]!.isPositiveGoal);
 
       _saveData();
       notifyListeners();
@@ -318,16 +332,18 @@ class ActionProvider with ChangeNotifier {
     if (state.isActive) {
       // Prevent deactivating if it's the last active action OR the only action period
       final activeCount = _actionStates.values.where((s) => s.isActive).length;
-      if (activeCount > 1 && _actionOrder.length > 1) {
-        state.isActive = false;
+      if (activeCount <= 1 || _actionOrder.length <= 1) {
+        return;
       }
+      _actionStates[id] = state.copyWith(isActive: false);
     } else {
-      state.isActive = true;
+      _actionStates[id] = state.copyWith(isActive: true);
     }
 
-    AnalyticsService.instance.logActionToggle(id, state.isActive);
+    AnalyticsService.instance.logActionToggle(id, _actionStates[id]!.isActive);
 
     _saveData();
+    _clampIndex();
     notifyListeners();
   }
 
