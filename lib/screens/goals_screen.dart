@@ -200,11 +200,17 @@ class _GoalsScreenState extends State<GoalsScreen> {
           await prefs.setBool('tutorial_goals_shown', true);
           AnalyticsService.instance.logTutorialComplete('goals_screen');
         }
-        setState(() => _isTutorialPreparing = false);
+        setState(() {
+          _isTutorialPreparing = false;
+          tutorialCoachMark = null;
+        });
       },
       onSkip: () {
         SharedPreferences.getInstance().then((p) => p.setBool('tutorial_goals_shown', true));
-        setState(() => _isTutorialPreparing = false);
+        setState(() {
+          _isTutorialPreparing = false;
+          tutorialCoachMark = null;
+        });
         return true;
       },
     );
@@ -219,8 +225,20 @@ class _GoalsScreenState extends State<GoalsScreen> {
     final provider = context.watch<ActionProvider>();
     final isDark = context.isDarkMode;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    return PopScope(
+      canPop: !_isTutorialPreparing,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_isTutorialPreparing && tutorialCoachMark != null) {
+          tutorialCoachMark?.finish();
+          setState(() {
+            _isTutorialPreparing = false;
+            tutorialCoachMark = null;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -287,8 +305,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
           }).toList(),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDismissBackground() {
     return Container(

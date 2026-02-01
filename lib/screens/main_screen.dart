@@ -76,6 +76,7 @@ class _MainScreenState extends State<MainScreen> {
   
   // Tutorial state
   String? _activeTutorialTargetId;
+  TutorialCoachMark? _tutorialCoachMark;
 
   @override
   void initState() {
@@ -214,7 +215,10 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
       onFinish: () async {
-        setState(() => _activeTutorialTargetId = null);
+        setState(() {
+          _activeTutorialTargetId = null;
+          _tutorialCoachMark = null;
+        });
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('has_shown_tutorial', true);
         if (!isReplay) {
@@ -222,7 +226,10 @@ class _MainScreenState extends State<MainScreen> {
         }
       },
       onSkip: () {
-        setState(() => _activeTutorialTargetId = null);
+        setState(() {
+          _activeTutorialTargetId = null;
+          _tutorialCoachMark = null;
+        });
         SharedPreferences.getInstance().then((prefs) => prefs.setBool('has_shown_tutorial', true));
         if (!isReplay) {
           AnalyticsService.instance.logTutorialComplete('main_screen');
@@ -232,6 +239,7 @@ class _MainScreenState extends State<MainScreen> {
       beforeFocus: (target) => setState(() => _activeTutorialTargetId = target.identify),
     );
     
+    _tutorialCoachMark = tutorial;
     tutorial.show(context: context);
   }
 
@@ -432,8 +440,20 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    return PopScope(
+      canPop: _activeTutorialTargetId == null,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_activeTutorialTargetId != null) {
+          _tutorialCoachMark?.finish();
+          setState(() {
+            _activeTutorialTargetId = null;
+            _tutorialCoachMark = null;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           SafeArea(
@@ -761,6 +781,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
