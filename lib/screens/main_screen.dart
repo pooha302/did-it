@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
@@ -66,7 +67,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   late PageController _pageController;
-  bool _showStats = false;
   
   // Keys for tutorial
   final GlobalKey _resetKey = GlobalKey();
@@ -107,8 +107,9 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _showTutorial({bool isReplay = false, int retryCount = 0}) async {
     if (!mounted) return;
 
-    if (_showStats) {
-      setState(() => _showStats = false);
+    final provider = context.read<ActionProvider>();
+    if (provider.showStats) {
+      provider.setShowStats(false);
       await Future.delayed(const Duration(milliseconds: 300));
     }
 
@@ -468,7 +469,7 @@ class _MainScreenState extends State<MainScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           // Reset Button
-                          _showStats
+                          provider.showStats
                               ? const SizedBox(width: 46)
                               : Material(
                                   key: _resetKey,
@@ -562,7 +563,7 @@ class _MainScreenState extends State<MainScreen> {
                           ),
 
                           // Goals Button (Top Right)
-                          _showStats
+                          provider.showStats
                               ? const SizedBox(width: 46)
                               : Material(
                                   key: _actionsKey,
@@ -616,37 +617,30 @@ class _MainScreenState extends State<MainScreen> {
                           // Determine if this card is the one centered/active
                           final isCurrentCenter = provider.activeActionIndex == index;
                           
-                          return AnimatedSwitcher(
+                          return AnimatedCrossFade(
                             duration: const Duration(milliseconds: 300),
-                            layoutBuilder: (currentChild, previousChildren) {
-                              return Stack(
-                                alignment: Alignment.center,
-                                children: <Widget>[
-                                  ...previousChildren,
-                                  if (currentChild != null) currentChild,
-                                ],
-                              );
-                            },
-                            child: _showStats
-                              ? ActionStatsView(
-                                  key: ValueKey('stats_${action.id}'),
-                                  action: action,
-                                )
-                              : AnimatedScale(
-                                  key: ValueKey('record_wrap_${action.id}'),
-                                  scale: isCurrentCenter ? 1.0 : 0.9,
-                                  duration: const Duration(milliseconds: 300),
-                                  child: AnimatedOpacity(
-                                    opacity: isCurrentCenter ? 1.0 : 0.5,
-                                    duration: const Duration(milliseconds: 300),
-                                    child: ActionView(
-                                      key: ValueKey('action_view_${action.id}'),
-                                      action: action, 
-                                      tutorialKey: isCurrentCenter ? _actionViewKey : null,
-                                      showTutorialHand: isCurrentCenter && _activeTutorialTargetId == "action_view",
-                                    ),
-                                  ),
+                            firstChild: AnimatedScale(
+                              key: ValueKey('record_wrap_${action.id}'),
+                              scale: isCurrentCenter ? 1.0 : 0.9,
+                              duration: const Duration(milliseconds: 300),
+                              child: AnimatedOpacity(
+                                opacity: isCurrentCenter ? 1.0 : 0.5,
+                                duration: const Duration(milliseconds: 300),
+                                child: ActionView(
+                                  key: ValueKey('action_view_${action.id}'),
+                                  action: action, 
+                                  tutorialKey: isCurrentCenter ? _actionViewKey : null,
+                                  showTutorialHand: isCurrentCenter && _activeTutorialTargetId == "action_view",
                                 ),
+                              ),
+                            ),
+                            secondChild: ActionStatsView(
+                              key: ValueKey('stats_${action.id}'),
+                              action: action,
+                            ),
+                            crossFadeState: provider.showStats
+                                ? CrossFadeState.showSecond
+                                : CrossFadeState.showFirst,
                           );
                         },
                       ),
@@ -657,7 +651,7 @@ class _MainScreenState extends State<MainScreen> {
                 
                 // Tutorial Button
                 // Tutorial Button
-                if (!_showStats)
+                if (!provider.showStats)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: Align(
@@ -730,23 +724,26 @@ class _MainScreenState extends State<MainScreen> {
                       // Stats Mode Button
                       IconButton(
                         onPressed: () {
-                          setState(() => _showStats = true);
-                          final provider = context.read<ActionProvider>();
+                          HapticFeedback.lightImpact();
+                          provider.setShowStats(true);
                           AnalyticsService.instance.logViewStats(provider.activeAction.id);
                         },
                         icon: Icon(
                           LucideIcons.barChart2,
-                          color: _showStats ? const Color(0xFFCEFF00) : (isDark ? Colors.white54 : Colors.grey),
+                          color: provider.showStats ? const Color(0xFFCEFF00) : (isDark ? Colors.white54 : Colors.grey),
                           size: 24,
                         ),
                       ),
                       
                       // Record Mode Button
                       IconButton(
-                        onPressed: () => setState(() => _showStats = false),
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          provider.setShowStats(false);
+                        },
                         icon: Icon(
                           LucideIcons.timer,
-                          color: !_showStats ? const Color(0xFFCEFF00) : (isDark ? Colors.white54 : Colors.grey),
+                          color: !provider.showStats ? const Color(0xFFCEFF00) : (isDark ? Colors.white54 : Colors.grey),
                           size: 24,
                         ),
                       ),
@@ -760,7 +757,7 @@ class _MainScreenState extends State<MainScreen> {
                           );
                           
                           if (result == 'data_reset') {
-                            setState(() => _showStats = false); // Ensure targets like _resetKey are visible
+                            provider.setShowStats(false); // Ensure targets like _resetKey are visible
                             // Delay slightly to allow screen transition to finish
                             Future.delayed(const Duration(milliseconds: 500), () {
                               if (mounted) _checkAndShowTutorial();

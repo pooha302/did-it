@@ -22,6 +22,7 @@ class ActionProvider with ChangeNotifier {
   int _activeActionIndex = 0;
   int _statsPeriod = 7;
   bool _showGoalsInstruction = true;
+  bool _showStats = false;
   List<String> _deletedPredefinedActionIds = [];
 
   Map<String, ActionData> get actionStates => _actionStates;
@@ -29,6 +30,7 @@ class ActionProvider with ChangeNotifier {
   List<String> get actionOrder => _actionOrder;
   int get statsPeriod => _statsPeriod;
   bool get showGoalsInstruction => _showGoalsInstruction;
+  bool get showStats => _showStats;
   
   List<ActionConfig> get allActionsByOrder {
     final all = [...ACTIONS, ..._customActions];
@@ -67,6 +69,12 @@ class ActionProvider with ChangeNotifier {
 
   void setStatsPeriod(int period) {
     _statsPeriod = period;
+    notifyListeners();
+  }
+
+  void setShowStats(bool value) {
+    if (_showStats == value) return;
+    _showStats = value;
     notifyListeners();
   }
 
