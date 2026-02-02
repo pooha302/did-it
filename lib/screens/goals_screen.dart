@@ -185,7 +185,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
       targets: targets,
       colorShadow: const Color(0xFF1A1A40),
       opacityShadow: 0.98,
-      hideSkip: true,
+      hideSkip: !isReplay,
       focusAnimationDuration: const Duration(milliseconds: 300),
       unFocusAnimationDuration: const Duration(milliseconds: 300),
       skipWidget: const Padding(
