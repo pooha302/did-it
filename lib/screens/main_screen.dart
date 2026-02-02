@@ -206,6 +206,7 @@ class _MainScreenState extends State<MainScreen> {
       colorShadow: const Color(0xFF1A1A40),
       paddingFocus: 10,
       opacityShadow: 0.98,
+      hideSkip: true,
       focusAnimationDuration: const Duration(milliseconds: 300),
       unFocusAnimationDuration: const Duration(milliseconds: 300),
       skipWidget: const Padding(
