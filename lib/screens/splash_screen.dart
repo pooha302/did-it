@@ -16,6 +16,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  bool _isVisible = false;
 
   @override
   void initState() {
@@ -40,7 +41,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       ),
     );
 
-    _controller.forward();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {
+          _isVisible = true;
+        });
+        _controller.forward();
+      }
+    });
   }
 
   @override
@@ -50,9 +58,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    
+    // Return empty black screen until visible to prevent "double logo" flash
+    if (!_isVisible) {
+      return Scaffold(
+        backgroundColor: isDark ? Colors.black : Colors.white,
+      );
+    }
     
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
@@ -65,44 +79,21 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               const Spacer(flex: 3),
               
               // Logo Reveal Animation
-              Center(
-                child: SizedBox(
-                  width: 220,
-                  height: 220,
-                  child: Stack(
-                    children: [
-                      // Layer 1: Empty State (Background)
-                      Container(
-                        width: 220,
-                        height: 220,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isDark ? Colors.grey[900] : Colors.grey[200],
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Did\nit',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.outfit(
-                              fontSize: 80, // Larger size
-                              fontWeight: FontWeight.w900,
-                              color: isDark ? Colors.grey[700] : Colors.grey[400],
-                              letterSpacing: -3.0, // Tighter letter spacing for larger text
-                              height: 0.85,
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      // Layer 2: Filled State (Foreground) - Clipped from bottom
-                      ClipRect(
-                        clipper: BottomFillClipper(_controller.value),
-                        child: Container(
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: Center(
+                  child: SizedBox(
+                    width: 220,
+                    height: 220,
+                    child: Stack(
+                      children: [
+                        // Layer 1: Empty State (Background)
+                        Container(
                           width: 220,
                           height: 220,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Color(0xFFCEFF00), // Electric Lime to match logo
+                            color: isDark ? Colors.grey[900] : Colors.grey[200],
                           ),
                           child: Center(
                             child: Text(
@@ -111,15 +102,41 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                               style: GoogleFonts.outfit(
                                 fontSize: 80, // Larger size
                                 fontWeight: FontWeight.w900,
-                                color: Colors.black, // Always black on Lime
-                                letterSpacing: -3.0,
+                                color: isDark ? Colors.grey[700] : Colors.grey[400],
+                                letterSpacing: -3.0, // Tighter letter spacing for larger text
                                 height: 0.85,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                        
+                        // Layer 2: Filled State (Foreground) - Clipped from bottom
+                        ClipRect(
+                          clipper: BottomFillClipper(_controller.value),
+                          child: Container(
+                            width: 220,
+                            height: 220,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFCEFF00), // Electric Lime to match logo
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Did\nit',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 80, // Larger size
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black, // Always black on Lime
+                                  letterSpacing: -3.0,
+                                  height: 0.85,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
