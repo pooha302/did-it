@@ -41,13 +41,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     );
 
     _controller.forward();
-
-    // Navigate to main screen after delay
-    Future.delayed(const Duration(milliseconds: 4000), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/main');
-      }
-    });
   }
 
   @override
