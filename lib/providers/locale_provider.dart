@@ -105,6 +105,8 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_help_desc': '궁금한 게 생기면 언제든 저를 불러주세요. 여기 대기 중! 🙋‍♂️',
       'custom': '직접 입력',
       'action_placeholder': '오늘은 무엇을 Did it 해볼까요?',
+      'confirm': '확인',
+      'ok': '확인',
     },
     'en': {
       'settings': 'Settings',
@@ -166,6 +168,8 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_help_desc': 'If you have any questions, call me anytime. I\'m waiting here! 🙋‍♂️',
       'custom': 'Direct Input',
       'action_placeholder': 'What shall we Did it today?',
+      'confirm': 'Confirm',
+      'ok': 'OK',
     },
     'ja': {
       'settings': '設定',
@@ -227,6 +231,8 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_help_desc': '気になることがあればいつでも呼んでください。ここで待機中！ 🙋‍♂️',
       'custom': '直接入力',
       'action_placeholder': '今日は何を Did it しましょうか？',
+      'confirm': '確認',
+      'ok': 'OK',
     },
     'zh': {
       'settings': '设置',
@@ -288,6 +294,8 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_help_desc': '如果有任何疑问，随时叫我。我在这里等候！ 🙋‍♂️',
       'custom': '直接输入',
       'action_placeholder': '今天要做点什么 Did it 呢？',
+      'confirm': '确认',
+      'ok': '确定',
     },
     'es': {
       'settings': 'Ajustes',
@@ -349,6 +357,8 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_help_desc': 'Si tienes dudas, llámame cuando quieras. ¡Aquí te espero! 🙋‍♂️',
       'custom': 'Entrada directa',
       'action_placeholder': '¿Qué vamos a Did it hoy?',
+      'confirm': 'Confirmar',
+      'ok': 'OK',
     },
     'fr': {
       'settings': 'Paramètres',
@@ -410,6 +420,8 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_help_desc': 'Si vous avez des questions, appelez-moi. Je vous attends ici ! 🙋‍♂️',
       'custom': 'Entrée directe',
       'action_placeholder': 'Qu\'allons-nous Did it aujourd\'hui ?',
+      'confirm': 'Confirmer',
+      'ok': 'OK',
     },
     'de': {
       'settings': 'Einstellungen',
@@ -471,6 +483,8 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_help_desc': 'Bei Fragen rufen Sie mich einfach. Ich warte hier! 🙋‍♂️',
       'custom': 'Direkteingabe',
       'action_placeholder': 'Was wollen wir heute Did it machen?',
+      'confirm': 'Bestätigen',
+      'ok': 'OK',
     },
   };
 

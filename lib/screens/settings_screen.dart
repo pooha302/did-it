@@ -286,10 +286,16 @@ class SettingsScreen extends StatelessWidget {
                 _buildCloudOption(
                   sheetContext,
                   title: lp.tr('backup'),
-                  subtitle: lp.tr('backup_desc'),
                   icon: LucideIcons.upload,
                   isDark: isDark,
                   onTap: () async {
+                    final confirmed = await _showConfirmDialog(
+                      outerContext,
+                      title: lp.tr('backup'),
+                      message: lp.tr('backup_desc'),
+                    );
+                    if (!confirmed) return;
+
                     Navigator.pop(sheetContext); // Close bottom sheet
                     _showLoadingDialog(outerContext, lp.tr('backup'));
                     try {
@@ -310,10 +316,16 @@ class SettingsScreen extends StatelessWidget {
                 _buildCloudOption(
                   sheetContext,
                   title: lp.tr('restore'),
-                  subtitle: lp.tr('restore_desc'),
                   icon: LucideIcons.download,
                   isDark: isDark,
                   onTap: () async {
+                    final confirmed = await _showConfirmDialog(
+                      outerContext,
+                      title: lp.tr('restore'),
+                      message: lp.tr('restore_desc'),
+                    );
+                    if (!confirmed) return;
+
                     Navigator.pop(sheetContext); // Close bottom sheet
                     _showLoadingDialog(outerContext, lp.tr('restore'));
                     try {
@@ -346,7 +358,6 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildCloudOption(
     BuildContext context, {
     required String title,
-    required String subtitle,
     required IconData icon,
     required bool isDark,
     required VoidCallback onTap,
@@ -382,14 +393,6 @@ class SettingsScreen extends StatelessWidget {
                       color: isDark ? Colors.white : Colors.black87,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: isDark ? Colors.white54 : Colors.black45,
-                      fontSize: 12,
                     ),
                   ),
                 ],
@@ -490,6 +493,49 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<bool> _showConfirmDialog(BuildContext context, {required String title, required String message}) async {
+    final lp = context.read<AppLocaleProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          title, 
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black, 
+            fontWeight: FontWeight.bold
+          )
+        ),
+        content: Text(
+          message, 
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.black87,
+            height: 1.5,
+          )
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              lp.tr('cancel'), 
+              style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              lp.tr('confirm'), 
+              style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)
+            ),
+          ),
+        ],
+      ),
+    ) ?? false;
   }
 
   void _showResetConfirmDialog(BuildContext context) {
