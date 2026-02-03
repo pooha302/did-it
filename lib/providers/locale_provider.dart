@@ -107,6 +107,7 @@ class AppLocaleProvider with ChangeNotifier {
       'action_placeholder': '오늘은 무엇을 Did it 해볼까요?',
       'confirm': '확인',
       'ok': '확인',
+      'daily_reset_msg': '새로운 하루가 시작되었습니다!\n데이터를 갱신합니다. ☀️',
     },
     'en': {
       'settings': 'Settings',
@@ -170,6 +171,7 @@ class AppLocaleProvider with ChangeNotifier {
       'action_placeholder': 'What shall we Did it today?',
       'confirm': 'Confirm',
       'ok': 'OK',
+      'daily_reset_msg': 'A new day has started!\nRefreshing data. ☀️',
     },
     'ja': {
       'settings': '設定',
@@ -233,6 +235,7 @@ class AppLocaleProvider with ChangeNotifier {
       'action_placeholder': '今日は何を Did it しましょうか？',
       'confirm': '確認',
       'ok': 'OK',
+      'daily_reset_msg': '新しい一日が始まりました！\nデータを更新します。 ☀️',
     },
     'zh': {
       'settings': '设置',
@@ -501,7 +504,7 @@ class AppLocaleProvider with ChangeNotifier {
                        translations['en']?[key] ?? 
                       key;
                        
-    // Replace underscores with spaces and sanitize spaces
-    return text.replaceAll('_', ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+    // Replace underscores with spaces and sanitize multiple spaces (preserving newlines)
+    return text.replaceAll('_', ' ').replaceAll(RegExp(r' +'), ' ').trim();
   }
 }

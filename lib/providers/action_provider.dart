@@ -133,18 +133,8 @@ class ActionProvider with ChangeNotifier {
         _actionStates[entry.key] = ActionData.fromJson(entry.value);
       }
 
-      // Handle daily reset logic
-      if (savedDate != null && savedDate != today) {
-        for (var state in _actionStates.values) {
-          state.count = 0;
-          // Recover to 1 credit only if it's currently 0
-          if (state.resetCredits < 1) {
-            state.resetCredits = 1;
-          }
-        }
-        await _saveData();
-        await prefs.setString('last_saved_date', today);
-      }
+    // Initial daily reset check
+    await checkAndResetDailyData();
     }
     
     // Ensure all current ACTIONS (not deleted) and custom actions are in the order list
@@ -442,6 +432,34 @@ class ActionProvider with ChangeNotifier {
 
     // Notify listeners to rebuild UI
     notifyListeners();
+  }
+
+  /// Checks if the date has changed since the last save and resets daily data if necessary.
+  Future<bool> checkAndResetDailyData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final savedDate = prefs.getString('last_saved_date');
+
+    if (savedDate != null && savedDate != today) {
+      debugPrint("📅 Date changed from $savedDate to $today. Resetting daily data...");
+      
+      for (var state in _actionStates.values) {
+        // Save final count of the previous day to history
+        state.history = Map.from(state.history)..[savedDate] = state.count;
+        
+        state.count = 0;
+        // Recover to 1 credit only if it's currently 0
+        if (state.resetCredits < 1) {
+          state.resetCredits = 1;
+        }
+      }
+      
+      await _saveData();
+      await prefs.setString('last_saved_date', today);
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
 }

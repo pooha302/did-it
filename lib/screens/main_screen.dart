@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
@@ -65,8 +66,9 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late PageController _pageController;
+  Timer? _midnightTimer;
   
   // Keys for tutorial
   final GlobalKey _resetKey = GlobalKey();
@@ -90,6 +92,9 @@ class _MainScreenState extends State<MainScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowTutorial();
     });
+
+    WidgetsBinding.instance.addObserver(this);
+    _setupMidnightTimer();
   }
 
   Future<void> _checkAndShowTutorial() async {
@@ -247,8 +252,103 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _midnightTimer?.cancel();
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh data when app returns to foreground
+      context.read<ActionProvider>().checkAndResetDailyData().then((didReset) {
+        if (didReset) {
+          _showDailyResetNotification();
+        }
+      });
+      // Reset timer in case it became outdated
+      _setupMidnightTimer();
+    }
+  }
+
+  void _setupMidnightTimer() {
+    _midnightTimer?.cancel();
+
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    final durationUntilMidnight = tomorrow.difference(now);
+
+    _midnightTimer = Timer(durationUntilMidnight, () {
+      if (mounted) {
+        context.read<ActionProvider>().checkAndResetDailyData().then((didReset) {
+          if (didReset) {
+            _showDailyResetNotification();
+          }
+        });
+        // Setup the next day's timer
+        _setupMidnightTimer();
+      }
+    });
+
+    debugPrint("🕒 Midnight timer setup: triggers in ${durationUntilMidnight.inHours}h ${durationUntilMidnight.inMinutes % 60}m");
+  }
+
+  void _showDailyResetNotification() {
+    if (!mounted) return;
+    
+    final localeProvider = context.read<AppLocaleProvider>();
+    final isDark = context.isDarkMode;
+    final overlay = Overlay.of(context);
+    
+    late OverlayEntry overlayEntry;
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: MediaQuery.of(context).size.height * 0.22, // Near the action circle
+        left: 32,
+        right: 32,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+              border: Border.all(
+                color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              localeProvider.tr('daily_reset_msg'),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                color: isDark ? Colors.white : Colors.black,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ).animate().slideY(begin: 0.2, end: 0, duration: 500.ms, curve: Curves.easeOutCubic).fadeIn(),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // Remove after 7 seconds
+    Future.delayed(const Duration(seconds: 7), () {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
   }
 
   void _showNothingToResetBubble(BuildContext context) {
