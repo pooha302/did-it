@@ -144,7 +144,11 @@ class ActionView extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(statusIcon, size: 14, color: (isFailure || isWarning) ? Colors.white : Colors.black),
+                                Icon(
+                                  statusIcon, 
+                                  size: 14, 
+                                  color: isSuccess ? Colors.black : Colors.white
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   statusText,
@@ -152,15 +156,12 @@ class ActionView extends StatelessWidget {
                                     color: (isFailure || isWarning) ? Colors.white : Colors.black,
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
-                                    shadows: [
-                                      Shadow(
-                                        color: (isFailure || isWarning) ? Colors.black.withOpacity(0.3) : Colors.white.withOpacity(0.5),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 1),
-                                      ),
-                                    ],
                                   ),
                                 ),
+                                if (isSuccess) ...[
+                                  const SizedBox(width: 4),
+                                  Icon(statusIcon, size: 14, color: Colors.black),
+                                ],
                               ],
                             ),
                           ).animate().scale(curve: Curves.elasticOut, duration: 600.ms).fadeIn(),
