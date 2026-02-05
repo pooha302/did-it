@@ -15,16 +15,19 @@ class AdService {
   int _numRewardedLoadAttempts = 0;
   final int maxFailedLoadAttempts = 3;
 
-  // Test IDs
+  // Test IDs (Google provided)
   final String _iosTestUnitId = 'ca-app-pub-3940256099942544/1712485313';
   final String _androidTestUnitId = 'ca-app-pub-3940256099942544/5224354917';
+
+  // Production IDs (User provided)
+  final String _iosRealUnitId = 'ca-app-pub-2756512315350932/6343692587';
+  final String _androidRealUnitId = 'ca-app-pub-2756512315350932/3379112733';
 
   String get rewardedAdUnitId {
     if (kDebugMode) {
       return Platform.isAndroid ? _androidTestUnitId : _iosTestUnitId;
     }
-    // For production, you would return your real IDs here
-    return Platform.isAndroid ? _androidTestUnitId : _iosTestUnitId;
+    return Platform.isAndroid ? _androidRealUnitId : _iosRealUnitId;
   }
 
   Future<void> init() async {
