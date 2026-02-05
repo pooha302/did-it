@@ -30,9 +30,8 @@ class ActionStatsView extends StatelessWidget {
     
     final hasData = data.any((v) => v > 0);
     
-    // Average calculation: exclude days with 0 records
-    final records = data.where((e) => e > 0);
-    final avg = records.isEmpty ? 0.0 : data.reduce((a, b) => a + b) / records.length;
+    // Average calculation: include all days in the selected period
+    final avg = data.isEmpty ? 0.0 : data.reduce((a, b) => a + b) / data.length;
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
