@@ -224,54 +224,75 @@ class ActionStatsView extends StatelessWidget {
   }
 
   void _showCustomPeriodDialog(BuildContext context, ActionProvider provider, AppLocaleProvider localeProvider, Color themeColor) {
-    final TextEditingController controller = TextEditingController(text: provider.statsPeriod.toString());
+    // If current is a preset, use the saved custom value. If current is already custom, use that.
+    final bool isPreset = [7, 14, 30].contains(provider.statsPeriod);
+    final String initialValue = isPreset ? provider.customStatsPeriod.toString() : provider.statsPeriod.toString();
+    final TextEditingController controller = TextEditingController(text: initialValue);
     
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
-        actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              autofocus: true,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: InputDecoration(
-                suffixText: localeProvider.tr('days'),
-                hintText: "7-365",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: themeColor, width: 2),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          final int? val = int.tryParse(controller.text);
+          final bool isValid = val != null && val >= 7 && val <= 365;
+          final bool isNotEmpty = controller.text.isNotEmpty;
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
+            actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  autofocus: true,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(3),
+                  ],
+                  decoration: InputDecoration(
+                    suffixText: localeProvider.tr('days'),
+                    hintText: "7-365",
+                    errorText: (isNotEmpty && !isValid) ? localeProvider.tr('invalid_period_msg') : null,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: themeColor, width: 2),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(localeProvider.tr('cancel'), style: TextStyle(color: Colors.grey[600])),
+              ),
+              ElevatedButton(
+                onPressed: isValid ? () {
+                  provider.setStatsPeriod(val);
+                  Navigator.pop(context);
+                } : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: themeColor,
+                  disabledBackgroundColor: themeColor.withOpacity(0.3),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: isValid ? 2 : 0,
+                ),
+                child: Text(
+                  localeProvider.tr('create'), 
+                  style: TextStyle(color: isValid ? Colors.white : Colors.white60)
                 ),
               ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(localeProvider.tr('cancel'), style: TextStyle(color: Colors.grey[600])),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final int? val = int.tryParse(controller.text);
-              if (val != null && val > 0) {
-                provider.setStatsPeriod(val.clamp(1, 365));
-                Navigator.pop(context);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: themeColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text(localeProvider.tr('create'), style: const TextStyle(color: Colors.white)),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

@@ -21,6 +21,7 @@ class ActionProvider with ChangeNotifier {
 
   int _activeActionIndex = 0;
   int _statsPeriod = 7;
+  int _customStatsPeriod = 60; // Default custom period is 60 as requested
   bool _showGoalsInstruction = true;
   bool _showStats = false;
   List<String> _deletedPredefinedActionIds = [];
@@ -29,6 +30,7 @@ class ActionProvider with ChangeNotifier {
   int get activeActionIndex => _activeActionIndex;
   List<String> get actionOrder => _actionOrder;
   int get statsPeriod => _statsPeriod;
+  int get customStatsPeriod => _customStatsPeriod;
   bool get showGoalsInstruction => _showGoalsInstruction;
   bool get showStats => _showStats;
   
@@ -81,6 +83,11 @@ class ActionProvider with ChangeNotifier {
 
   void setStatsPeriod(int period) {
     _statsPeriod = period;
+    // Always remember the last custom value if it's not a preset
+    if (![7, 14, 30].contains(period)) {
+      _customStatsPeriod = period;
+    }
+    _saveData();
     notifyListeners();
   }
 
@@ -152,6 +159,7 @@ class ActionProvider with ChangeNotifier {
     _actionOrder.removeWhere((id) => !allActionIds.contains(id));
     
     _statsPeriod = prefs.getInt('stats_period') ?? 7;
+    _customStatsPeriod = prefs.getInt('custom_stats_period') ?? 60;
     _showGoalsInstruction = prefs.getBool('show_goals_instruction') ?? true;
     
     // Fallback: Ensure at least one action is active
@@ -173,6 +181,7 @@ class ActionProvider with ChangeNotifier {
     await prefs.setString('custom_actions', jsonEncode(_customActions.map((h) => h.toJson()).toList()));
     await prefs.setStringList('deleted_predefined_action_ids', _deletedPredefinedActionIds);
     await prefs.setInt('stats_period', _statsPeriod);
+    await prefs.setInt('custom_stats_period', _customStatsPeriod);
     await prefs.setBool('show_goals_instruction', _showGoalsInstruction);
   }
 

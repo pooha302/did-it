@@ -108,6 +108,7 @@ class AppLocaleProvider with ChangeNotifier {
       'confirm': '확인',
       'ok': '확인',
       'daily_reset_msg': '새로운 하루가 시작되었습니다!\n데이터를 갱신합니다. ☀️',
+      'invalid_period_msg': '7~365일 사이만 가능해요! 📅',
     },
     'en': {
       'settings': 'Settings',
@@ -172,6 +173,7 @@ class AppLocaleProvider with ChangeNotifier {
       'confirm': 'Confirm',
       'ok': 'OK',
       'daily_reset_msg': 'A new day has started!\nRefreshing data. ☀️',
+      'invalid_period_msg': 'Only 7 to 365 days allowed! 📅',
     },
     'ja': {
       'settings': '設定',
@@ -235,6 +237,7 @@ class AppLocaleProvider with ChangeNotifier {
       'action_placeholder': '今日は何を Did it しましょうか？',
       'confirm': '確認',
       'ok': 'OK',
+      'invalid_period_msg': '7〜365日の間だけ設定できます！ 📅',
       'daily_reset_msg': '新しい一日が始まりました！\nデータを更新します。 ☀️',
     },
     'zh': {
@@ -299,6 +302,7 @@ class AppLocaleProvider with ChangeNotifier {
       'action_placeholder': '今天要做点什么 Did it 呢？',
       'confirm': '确认',
       'ok': '确定',
+      'invalid_period_msg': '仅限 7 到 365 天！ 📅',
     },
     'es': {
       'settings': 'Ajustes',
@@ -362,6 +366,7 @@ class AppLocaleProvider with ChangeNotifier {
       'action_placeholder': '¿Qué vamos a Did it hoy?',
       'confirm': 'Confirmar',
       'ok': 'OK',
+      'invalid_period_msg': '¡Solo entre 7 y 365 días! 📅',
     },
     'fr': {
       'settings': 'Paramètres',
@@ -425,6 +430,7 @@ class AppLocaleProvider with ChangeNotifier {
       'action_placeholder': 'Qu\'allons-nous Did it aujourd\'hui ?',
       'confirm': 'Confirmer',
       'ok': 'OK',
+      'invalid_period_msg': 'Seulement de 7 à 365 jours ! 📅',
     },
     'de': {
       'settings': 'Einstellungen',
@@ -488,6 +494,7 @@ class AppLocaleProvider with ChangeNotifier {
       'action_placeholder': 'Was wollen wir heute Did it machen?',
       'confirm': 'Bestätigen',
       'ok': 'OK',
+      'invalid_period_msg': 'Nur 7 bis 365 Tage möglich! 📅',
     },
   };
 
