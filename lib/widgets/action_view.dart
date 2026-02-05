@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:didit/providers/locale_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -263,8 +264,6 @@ class ActionView extends StatelessWidget {
                 ),
 
                 // Tutorial Hand (Placed last to overlap everything)
-                // Tutorial Hand (Placed last to overlap everything)
-                // Tutorial Hand (Placed last to overlap everything)
                 if (showTutorialHand)
                   Center(
                     child: const Icon(
@@ -278,11 +277,100 @@ class ActionView extends StatelessWidget {
                         .animate(onPlay: (controller) => controller.repeat(reverse: true))
                         .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.1, 1.1), duration: 800.ms),
                   ),
+
+                // Last Tap Time (Outside below the circle)
+                if (state.lastTapTime != null)
+                  Positioned(
+                    bottom: -26,
+                    child: _LiveRelativeTimeText(
+                      lastTapTime: state.lastTapTime!,
+                      localeProvider: localeProvider,
+                      formatter: _formatLastTapTime,
+                      style: TextStyle(
+                        color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.35),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ).animate().fadeIn(duration: 400.ms),
               ],
             );
           },
         ),
       ),
+    );
+  }
+
+  String _formatLastTapTime(DateTime time, AppLocaleProvider localeProvider) {
+    final now = DateTime.now();
+    final difference = now.difference(time);
+    
+    if (difference.inMinutes < 1) {
+      return localeProvider.tr('just_now');
+    } else if (difference.inMinutes < 60) {
+      return "${difference.inMinutes}${localeProvider.tr('min_ago')}";
+    } else {
+      return "${difference.inHours}${localeProvider.tr('hour_ago')}";
+    }
+  }
+}
+
+class _LiveRelativeTimeText extends StatefulWidget {
+  final DateTime lastTapTime;
+  final AppLocaleProvider localeProvider;
+  final TextStyle style;
+  final String Function(DateTime, AppLocaleProvider) formatter;
+
+  const _LiveRelativeTimeText({
+    required this.lastTapTime,
+    required this.localeProvider,
+    required this.style,
+    required this.formatter,
+  });
+
+  @override
+  State<_LiveRelativeTimeText> createState() => _LiveRelativeTimeTextState();
+}
+
+class _LiveRelativeTimeTextState extends State<_LiveRelativeTimeText> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void didUpdateWidget(_LiveRelativeTimeText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.lastTapTime != widget.lastTapTime) {
+      _startTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    // Update every second to ensure the relative time switches (e.g. to '1 min ago') promptly
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      widget.formatter(widget.lastTapTime, widget.localeProvider),
+      style: widget.style,
     );
   }
 }

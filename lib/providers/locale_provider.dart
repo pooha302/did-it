@@ -109,6 +109,9 @@ class AppLocaleProvider with ChangeNotifier {
       'ok': '확인',
       'daily_reset_msg': '새로운 하루가 시작되었습니다!\n데이터를 갱신합니다. ☀️',
       'invalid_period_msg': '7~365일 사이만 가능해요! 📅',
+      'just_now': '방금 전',
+      'min_ago': '분 전',
+      'hour_ago': '시간 전',
     },
     'en': {
       'settings': 'Settings',
@@ -174,6 +177,9 @@ class AppLocaleProvider with ChangeNotifier {
       'ok': 'OK',
       'daily_reset_msg': 'A new day has started!\nRefreshing data. ☀️',
       'invalid_period_msg': 'Only 7 to 365 days allowed! 📅',
+      'just_now': 'Just now',
+      'min_ago': 'm ago',
+      'hour_ago': 'h ago',
     },
     'ja': {
       'settings': '設定',
@@ -237,6 +243,9 @@ class AppLocaleProvider with ChangeNotifier {
       'action_placeholder': '今日は何を Did it しましょうか？',
       'confirm': '確認',
       'ok': 'OK',
+      'just_now': 'たった今',
+      'min_ago': '分前',
+      'hour_ago': '時間前',
       'invalid_period_msg': '7〜365日の間だけ設定できます！ 📅',
       'daily_reset_msg': '新しい一日が始まりました！\nデータを更新します。 ☀️',
     },
@@ -303,6 +312,9 @@ class AppLocaleProvider with ChangeNotifier {
       'confirm': '确认',
       'ok': '确定',
       'invalid_period_msg': '仅限 7 到 365 天！ 📅',
+      'just_now': '刚刚',
+      'min_ago': '分前',
+      'hour_ago': '小时前',
     },
     'es': {
       'settings': 'Ajustes',
@@ -367,6 +379,9 @@ class AppLocaleProvider with ChangeNotifier {
       'confirm': 'Confirmar',
       'ok': 'OK',
       'invalid_period_msg': '¡Solo entre 7 y 365 días! 📅',
+      'just_now': 'Justo ahora',
+      'min_ago': 'm antes',
+      'hour_ago': 'h antes',
     },
     'fr': {
       'settings': 'Paramètres',
@@ -431,6 +446,9 @@ class AppLocaleProvider with ChangeNotifier {
       'confirm': 'Confirmer',
       'ok': 'OK',
       'invalid_period_msg': 'Seulement de 7 à 365 jours ! 📅',
+      'just_now': 'À l\'instant',
+      'min_ago': 'm auparavant',
+      'hour_ago': 'h auparavant',
     },
     'de': {
       'settings': 'Einstellungen',
@@ -495,6 +513,9 @@ class AppLocaleProvider with ChangeNotifier {
       'confirm': 'Bestätigen',
       'ok': 'OK',
       'invalid_period_msg': 'Nur 7 bis 365 Tage möglich! 📅',
+      'just_now': 'Gerade eben',
+      'min_ago': 'Min. her',
+      'hour_ago': 'Std. her',
     },
   };
 

@@ -261,8 +261,10 @@ class ActionProvider with ChangeNotifier {
   void incrementActionCount(String id) {
     final state = _actionStates[id];
     if (state != null) {
+      final now = DateTime.now();
       state.count++;
-      final today = DateTime.now().toIso8601String().split('T')[0];
+      state.lastTapTime = now;
+      final today = now.toIso8601String().split('T')[0];
       state.history = Map.from(state.history)..[today] = state.count;
       _saveData();
       notifyListeners();
@@ -273,6 +275,7 @@ class ActionProvider with ChangeNotifier {
     if (activeState.resetCredits > 0) {
       activeState.count = 0;
       activeState.resetCredits--;
+      activeState.lastTapTime = null;
       final today = DateTime.now().toIso8601String().split('T')[0];
       activeState.history = Map.from(activeState.history)..[today] = 0;
       
@@ -457,6 +460,7 @@ class ActionProvider with ChangeNotifier {
         state.history = Map.from(state.history)..[savedDate] = state.count;
         
         state.count = 0;
+        state.lastTapTime = null;
         // Recover to 1 credit only if it's currently 0
         if (state.resetCredits < 1) {
           state.resetCredits = 1;

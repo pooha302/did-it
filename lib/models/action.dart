@@ -54,6 +54,7 @@ class ActionData {
   bool isActive;
   bool isPositiveGoal; // true: achieve, false: avoid
   Map<String, int> history;
+  DateTime? lastTapTime;
 
   ActionData({
     this.count = 0,
@@ -62,6 +63,7 @@ class ActionData {
     this.isActive = false,
     this.isPositiveGoal = true,
     this.history = const {},
+    this.lastTapTime,
   });
 
   Map<String, dynamic> toJson() => {
@@ -71,6 +73,7 @@ class ActionData {
         'isActive': isActive,
         'isPositiveGoal': isPositiveGoal,
         'history': history,
+        'lastTapTime': lastTapTime?.toIso8601String(),
       };
 
   factory ActionData.fromJson(Map<String, dynamic> json) {
@@ -81,6 +84,7 @@ class ActionData {
       isActive: json['isActive'] ?? false,
       isPositiveGoal: json['isPositiveGoal'] ?? true,
       history: Map<String, int>.from(json['history'] ?? {}),
+      lastTapTime: json['lastTapTime'] != null ? DateTime.parse(json['lastTapTime']) : null,
     );
   }
 
@@ -91,6 +95,7 @@ class ActionData {
     bool? isActive,
     bool? isPositiveGoal,
     Map<String, int>? history,
+    DateTime? lastTapTime,
   }) {
     return ActionData(
       count: count ?? this.count,
@@ -99,6 +104,7 @@ class ActionData {
       isActive: isActive ?? this.isActive,
       isPositiveGoal: isPositiveGoal ?? this.isPositiveGoal,
       history: history ?? Map.from(this.history),
+      lastTapTime: lastTapTime ?? this.lastTapTime,
     );
   }
 }
