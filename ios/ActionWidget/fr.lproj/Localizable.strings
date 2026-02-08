@@ -1,0 +1,12 @@
+"DiditWidget_Name" = "Widget Did it";
+"DiditWidget_Desc" = "Vos progrès du jour en un coup d'œil.";
+"SelectAction_Title" = "Choisir l'action";
+"SelectAction_Desc" = "Sélectionnez une action à suivre.";
+"Action_Label" = "Action 1";
+"Action2_Label" = "Action 2";
+"Action3_Label" = "Action 3";
+"Action4_Label" = "Action 4";
+"Action_None" = "Aucun";
+"Action_Empty_State" = "Ajoutez des actions dans les paramètres
+ou modifiez le widget.";
+"Action" = "Action";

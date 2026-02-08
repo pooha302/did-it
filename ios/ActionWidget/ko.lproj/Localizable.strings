@@ -1,0 +1,12 @@
+"SelectAction_Title" = "액션 선택";
+"SelectAction_Desc" = "추적할 액션을 선택하세요.";
+"Action_Label" = "액션 1";
+"Action2_Label" = "액션 2";
+"Action3_Label" = "액션 3";
+"Action4_Label" = "액션 4";
+"Action_None" = "선택 안 함";
+"Action_Empty_State" = "설정이나 위젯 편집에서
+액션을 추가해보세요.";
+"DiditWidget_Name" = "Did it 위젯";
+"DiditWidget_Desc" = "오늘의 진행 상황을 한눈에 확인하세요.";
+"Action" = "액션";

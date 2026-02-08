@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui' as ui;
+import 'package:home_widget/home_widget.dart';
 import '../services/analytics_service.dart';
 
 class AppLocaleProvider with ChangeNotifier {
@@ -25,6 +27,25 @@ class AppLocaleProvider with ChangeNotifier {
     
     // Log GA Event
     AnalyticsService.instance.logLanguageChange(locale?.languageCode ?? 'system');
+
+    // Save to HomeWidget (AppGroup on iOS) so the widget extension can see the app's language choice
+    if (Platform.isIOS) {
+      await HomeWidget.setAppGroupId('group.com.pooha302.didit');
+    }
+    await HomeWidget.saveWidgetData<String>('language_code', locale?.languageCode ?? 'system');
+
+    // Trigger widget update to refresh translations on Home Screen
+    _updateWidgets();
+  }
+
+  void _updateWidgets() {
+    // We can't easily access ActionProvider here without 'context' 
+    // but we can send a broadcast to HomeWidget to update.
+    HomeWidget.updateWidget(
+      name: 'DidItWidgetProvider',
+      androidName: 'DidItWidgetProvider',
+      iOSName: 'ActionWidget',
+    );
   }
 
   Future<void> _loadLocale() async {
@@ -38,10 +59,18 @@ class AppLocaleProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void resetToDefaults() {
+  void resetToDefaults() async { // Made async
     _locale = null; // Follow system
     notifyListeners();
     AnalyticsService.instance.logLanguageChange('system');
+    
+    // Save to HomeWidget (AppGroup on iOS)
+    if (Platform.isIOS) {
+      await HomeWidget.setAppGroupId('group.com.pooha302.didit');
+    }
+    await HomeWidget.saveWidgetData<String>('language_code', 'system');
+    
+    _updateWidgets();
   }
 
   static Map<String, Map<String, String>> translations = {
@@ -112,6 +141,9 @@ class AppLocaleProvider with ChangeNotifier {
       'just_now': '방금 전',
       'min_ago': '분 전',
       'hour_ago': '시간 전',
+      'widget_intro_title': '새로운 기능: 위젯!',
+      'widget_intro_desc': '이제 홈 화면에 위젯을 추가해서 더 빠르게 행동을 기록해보세요.',
+      'got_it': '알겠어요',
     },
     'en': {
       'settings': 'Settings',
@@ -180,6 +212,9 @@ class AppLocaleProvider with ChangeNotifier {
       'just_now': 'Just now',
       'min_ago': 'm ago',
       'hour_ago': 'h ago',
+      'widget_intro_title': 'New Feature: Widgets!',
+      'widget_intro_desc': 'You can now add widgets to your home screen to track your actions quickly.',
+      'got_it': 'Got it',
     },
     'ja': {
       'settings': '設定',
@@ -248,6 +283,9 @@ class AppLocaleProvider with ChangeNotifier {
       'hour_ago': '時間前',
       'invalid_period_msg': '7〜365日の間だけ設定できます！ 📅',
       'daily_reset_msg': '新しい一日が始まりました！\nデータを更新します。 ☀️',
+      'widget_intro_title': '新機能：ウィジェット！',
+      'widget_intro_desc': 'ホーム画面にウィジェットを追加して、アクションをすばやく記録できます。',
+      'got_it': '了解',
     },
     'zh': {
       'settings': '设置',
@@ -315,6 +353,9 @@ class AppLocaleProvider with ChangeNotifier {
       'just_now': '刚刚',
       'min_ago': '分前',
       'hour_ago': '小时前',
+      'widget_intro_title': '新功能：小组件！',
+      'widget_intro_desc': '现在可以将小组件添加到主屏幕，更快速地记录行动。',
+      'got_it': '知道了',
     },
     'es': {
       'settings': 'Ajustes',
@@ -382,6 +423,9 @@ class AppLocaleProvider with ChangeNotifier {
       'just_now': 'Justo ahora',
       'min_ago': 'm antes',
       'hour_ago': 'h antes',
+      'widget_intro_title': '¡Nueva función: Widgets!',
+      'widget_intro_desc': 'Ahora puedes añadir widgets a tu pantalla de inicio para registrar acciones rápidamente.',
+      'got_it': 'Entendido',
     },
     'fr': {
       'settings': 'Paramètres',
@@ -449,6 +493,9 @@ class AppLocaleProvider with ChangeNotifier {
       'just_now': 'À l\'instant',
       'min_ago': 'm auparavant',
       'hour_ago': 'h auparavant',
+      'widget_intro_title': 'Nouvelle fonctionnalité : Widgets !',
+      'widget_intro_desc': 'Vous pouvez maintenant ajouter des widgets à votre écran d\'accueil pour enregistrer vos actions rapidement.',
+      'got_it': 'Compris',
     },
     'de': {
       'settings': 'Einstellungen',
@@ -516,6 +563,9 @@ class AppLocaleProvider with ChangeNotifier {
       'just_now': 'Gerade eben',
       'min_ago': 'Min. her',
       'hour_ago': 'Std. her',
+      'widget_intro_title': 'Neue Funktion: Widgets!',
+      'widget_intro_desc': 'Sie können jetzt Widgets zum Startbildschirm hinzufügen, um Aktionen schneller aufzuzeichnen.',
+      'got_it': 'Verstanden',
     },
   };
 

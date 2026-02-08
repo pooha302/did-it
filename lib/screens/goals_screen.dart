@@ -8,6 +8,7 @@ import 'package:didit/providers/theme_provider.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/foundation.dart';
 import '../services/analytics_service.dart';
 
 import '../widgets/action_goal_tile.dart';
@@ -185,7 +186,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
       targets: targets,
       colorShadow: const Color(0xFF1A1A40),
       opacityShadow: 0.98,
-      hideSkip: !isReplay,
+      hideSkip: kDebugMode ? false : !isReplay,
       focusAnimationDuration: const Duration(milliseconds: 300),
       unFocusAnimationDuration: const Duration(milliseconds: 300),
       skipWidget: const Padding(

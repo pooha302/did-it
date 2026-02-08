@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:flutter/foundation.dart';
 
 import '../providers/action_provider.dart';
 import '../providers/theme_provider.dart';
@@ -20,6 +21,7 @@ import '../screens/splash_screen.dart';
 import '../widgets/add_action_sheet.dart';
 import '../services/ad_service.dart';
 import '../services/analytics_service.dart';
+import '../services/widget_intro_service.dart';
 
 // App initializer that shows splash screen while loading
 class AppInitializer extends StatefulWidget {
@@ -106,6 +108,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       Future.delayed(const Duration(milliseconds: 1500), () async {
         if (mounted) await _showTutorial();
       });
+    } else {
+      // Already saw tutorial, check if we need to show widget intro
+      if (mounted) {
+         // Tiny delay to ensure layout
+         Future.delayed(const Duration(milliseconds: 1000), () {
+            if (mounted) WidgetIntroService.checkAndShowIntro(context);
+         });
+      }
     }
   }
 
@@ -211,7 +221,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       colorShadow: const Color(0xFF1A1A40),
       paddingFocus: 10,
       opacityShadow: 0.98,
-      hideSkip: !isReplay,
+      hideSkip: kDebugMode ? false : !isReplay,
       focusAnimationDuration: const Duration(milliseconds: 300),
       unFocusAnimationDuration: const Duration(milliseconds: 300),
       skipWidget: const Padding(
@@ -230,6 +240,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         await prefs.setBool('has_shown_tutorial', true);
         if (!isReplay) {
           AnalyticsService.instance.logTutorialComplete('main_screen');
+          // Show Widget Intro after tutorial
+          if (mounted) WidgetIntroService.checkAndShowIntro(context);
         }
       },
       onSkip: () {
@@ -240,6 +252,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         SharedPreferences.getInstance().then((prefs) => prefs.setBool('has_shown_tutorial', true));
         if (!isReplay) {
           AnalyticsService.instance.logTutorialComplete('main_screen');
+          // Show Widget Intro after skip
+          if (mounted) WidgetIntroService.checkAndShowIntro(context);
         }
         return true;
       },
@@ -266,6 +280,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         if (didReset) {
           _showDailyResetNotification();
         }
+        // Sync widget data
+        if (mounted) context.read<ActionProvider>().syncFromWidget();
       });
       // Reset timer in case it became outdated
       _setupMidnightTimer();
@@ -715,39 +731,46 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         itemCount: activeActionsList.length,
                         itemBuilder: (context, index) {
                           final action = activeActionsList[index];
-                          // Determine if this card is the one centered/active
                           final isCurrentCenter = provider.activeActionIndex == index;
                           
-                          return AnimatedCrossFade(
-                            key: ValueKey('crossfade_${action.id}'),
-                            duration: const Duration(milliseconds: 300),
-                            alignment: Alignment.center,
-                            firstChild: SizedBox.expand(
-                              child: AnimatedScale(
-                                key: ValueKey('record_wrap_${action.id}'),
-                                scale: isCurrentCenter ? 1.0 : 0.9,
+                          return LayoutBuilder(
+                            builder: (context, constraints) {
+                              return AnimatedCrossFade(
+                                key: ValueKey('crossfade_${action.id}'),
                                 duration: const Duration(milliseconds: 300),
-                                child: AnimatedOpacity(
-                                  opacity: isCurrentCenter ? 1.0 : 0.5,
-                                  duration: const Duration(milliseconds: 300),
-                                  child: ActionView(
-                                    key: ValueKey('action_view_${action.id}'),
-                                    action: action, 
-                                    tutorialKey: isCurrentCenter ? _actionViewKey : null,
-                                    showTutorialHand: isCurrentCenter && _activeTutorialTargetId == "action_view",
+                                alignment: Alignment.center,
+                                firstChild: SizedBox(
+                                  width: constraints.maxWidth,
+                                  height: constraints.maxHeight,
+                                  child: AnimatedScale(
+                                    key: ValueKey('record_wrap_${action.id}'),
+                                    scale: isCurrentCenter ? 1.0 : 0.9,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: AnimatedOpacity(
+                                      opacity: isCurrentCenter ? 1.0 : 0.5,
+                                      duration: const Duration(milliseconds: 300),
+                                      child: ActionView(
+                                        key: ValueKey('action_view_${action.id}'),
+                                        action: action, 
+                                        tutorialKey: isCurrentCenter ? _actionViewKey : null,
+                                        showTutorialHand: isCurrentCenter && _activeTutorialTargetId == "action_view",
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            secondChild: SizedBox.expand(
-                              child: ActionStatsView(
-                                key: ValueKey('stats_${action.id}'),
-                                action: action,
-                              ),
-                            ),
-                            crossFadeState: provider.showStats
-                                ? CrossFadeState.showSecond
-                                : CrossFadeState.showFirst,
+                                secondChild: SizedBox(
+                                  width: constraints.maxWidth,
+                                  height: constraints.maxHeight,
+                                  child: ActionStatsView(
+                                    key: ValueKey('stats_${action.id}'),
+                                    action: action,
+                                  ),
+                                ),
+                                crossFadeState: provider.showStats
+                                    ? CrossFadeState.showSecond
+                                    : CrossFadeState.showFirst,
+                              );
+                            }
                           );
                         },
                       ),
@@ -756,7 +779,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   ),
                 ),
                 
-                // Tutorial Button
                 // Tutorial Button
                 if (!provider.showStats)
                   Padding(

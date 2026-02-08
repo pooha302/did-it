@@ -214,34 +214,42 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     _buildPickerOption(context, lp.tr('follow_system'), lp.locale == null, isDark, () {
                       context.read<AppLocaleProvider>().setLocale(null);
+                      context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
                     _buildPickerOption(context, 'English', lp.locale?.languageCode == 'en', isDark, () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('en'));
+                      context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
                     _buildPickerOption(context, '简体中文', lp.locale?.languageCode == 'zh', isDark, () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('zh'));
+                      context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
                     _buildPickerOption(context, 'Español', lp.locale?.languageCode == 'es', isDark, () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('es'));
+                      context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
                     _buildPickerOption(context, '日本語', lp.locale?.languageCode == 'ja', isDark, () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('ja'));
+                      context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
                     _buildPickerOption(context, '한국어', lp.locale?.languageCode == 'ko', isDark, () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('ko'));
+                      context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
                     _buildPickerOption(context, 'Français', lp.locale?.languageCode == 'fr', isDark, () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('fr'));
+                      context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
                     _buildPickerOption(context, 'Deutsch', lp.locale?.languageCode == 'de', isDark, () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('de'));
+                      context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
                   ],

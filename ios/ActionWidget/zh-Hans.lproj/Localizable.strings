@@ -1,0 +1,12 @@
+"DiditWidget_Name" = "Did it 小组件";
+"DiditWidget_Desc" = "一目了然地查看今日进度。";
+"SelectAction_Title" = "选择行动";
+"SelectAction_Desc" = "选择要追踪的行动。";
+"Action_Label" = "行动 1";
+"Action2_Label" = "行动 2";
+"Action3_Label" = "行动 3";
+"Action4_Label" = "行动 4";
+"Action_None" = "无";
+"Action_Empty_State" = "在设置或小组件编辑中
+添加行动。";
+"Action" = "行动";

@@ -29,6 +29,7 @@ dependencies:
   firebase_core: ^3.10.1
   firebase_analytics: ^11.4.1
   package_info_plus: ^9.0.0
+  home_widget: ^0.6.0
 
 dependency_overrides:
   path_provider_foundation: 2.3.2

@@ -1,0 +1,12 @@
+"DiditWidget_Name" = "Widget Did it";
+"DiditWidget_Desc" = "Tu progreso de hoy de un vistazo.";
+"SelectAction_Title" = "Seleccionar Acción";
+"SelectAction_Desc" = "Elige una acción para rastrear.";
+"Action_Label" = "Acción 1";
+"Action2_Label" = "Acción 2";
+"Action3_Label" = "Acción 3";
+"Action4_Label" = "Acción 4";
+"Action_None" = "Ninguno";
+"Action_Empty_State" = "Añade acciones en los ajustes
+o edita el widget.";
+"Action" = "Acción";

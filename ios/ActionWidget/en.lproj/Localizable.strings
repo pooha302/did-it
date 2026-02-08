@@ -1,0 +1,12 @@
+"SelectAction_Title" = "Select Action";
+"SelectAction_Desc" = "Select an action to track.";
+"Action_Label" = "Action 1";
+"Action2_Label" = "Action 2";
+"Action3_Label" = "Action 3";
+"Action4_Label" = "Action 4";
+"Action_None" = "None";
+"Action_Empty_State" = "Add actions in settings
+or edit the widget.";
+"DiditWidget_Name" = "Did it Widget";
+"DiditWidget_Desc" = "Today's progress at a glance.";
+"Action" = "Action";

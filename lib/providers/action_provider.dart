@@ -6,6 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/action.dart';
 import '../services/cloud_backup_service.dart';
 import '../services/analytics_service.dart';
+import 'package:home_widget/home_widget.dart';
+import 'locale_provider.dart';
+import 'dart:ui' as ui;
+
+
 
 class ActionProvider with ChangeNotifier {
   Map<String, ActionData> _actionStates = {
@@ -68,6 +73,7 @@ class ActionProvider with ChangeNotifier {
     _activeActionIndex = index;
     _clampIndex();
     notifyListeners();
+    updateHomeWidget();
   }
 
   void _clampIndex() {
@@ -142,6 +148,9 @@ class ActionProvider with ChangeNotifier {
 
     // Initial daily reset check
     await checkAndResetDailyData();
+    
+    // Sync any changes from widget while app was closed
+    await syncFromWidget();
     }
     
     // Ensure all current ACTIONS (not deleted) and custom actions are in the order list
@@ -171,7 +180,70 @@ class ActionProvider with ChangeNotifier {
     }
     
     notifyListeners();
+    await updateHomeWidget();
   }
+
+  Future<void> updateHomeWidget() async {
+    const groupId = 'group.com.pooha302.didit';
+    await HomeWidget.setAppGroupId(groupId);
+    
+    // Get language for translations (respect app-level selection)
+    final prefs = await SharedPreferences.getInstance();
+    final savedLang = prefs.getString('language_code');
+    String langCode = savedLang ?? ui.PlatformDispatcher.instance.locale.languageCode.split('_')[0].split('-')[0].toLowerCase();
+    
+    final currentLang = AppLocaleProvider.translations.containsKey(langCode) ? langCode : 'en';
+
+    // Filter active actions only for the widget
+    final activeActionIds = _actionOrder.where((id) {
+      final state = _actionStates[id];
+      return state != null && state.isActive;
+    }).toList();
+
+    // Prepare JSON for grouped sync (more reliable on iOS)
+    // ONLY include ACTIVE actions to fix the "inactive actions showing" issue
+    final List<Map<String, dynamic>> activeActionsData = [];
+
+    for (var actionId in activeActionIds) {
+      final action = _actionStates[actionId]!;
+      var baseAction = ACTIONS.firstWhere((a) => a.id == actionId, orElse: () => _customActions.firstWhere((a) => a.id == actionId, orElse: () => ACTIONS.first));
+      final translatedTitle = AppLocaleProvider.translations[currentLang]?[baseAction.title] ?? baseAction.title;
+      final hexColor = '#${baseAction.color.value.toRadixString(16).padLeft(8, '0')}';
+
+      activeActionsData.add({
+        'id': actionId,
+        'title': translatedTitle,
+        'count': action.count,
+        'goal': action.goal,
+        'color': hexColor,
+      });
+
+      // IMPORTANT: Also save individual keys so Widget-initiated increments and local reads match
+      await HomeWidget.saveWidgetData<String>('title_$actionId', translatedTitle);
+      await HomeWidget.saveWidgetData<int>('count_$actionId', action.count);
+      await HomeWidget.saveWidgetData<int>('goal_$actionId', action.goal);
+      await HomeWidget.saveWidgetData<String>('color_$actionId', hexColor);
+    }
+
+    // Save EVERYTHING into one atomic JSON string
+    final jsonSync = jsonEncode(activeActionsData);
+    final successJson = await HomeWidget.saveWidgetData<String>('actions_json', jsonSync);
+    
+    // Save current selection and the list of IDs for legacy/compatibility
+    await HomeWidget.saveWidgetData<String>('active_action_id', activeAction.id);
+    await HomeWidget.saveWidgetData<String>('action_ids', activeActionIds.join(','));
+
+    debugPrint("WIDGET SYNC: JSON ($successJson): $jsonSync");
+    
+    await HomeWidget.updateWidget(
+      name: 'DidItWidgetProvider',
+      androidName: 'DidItWidgetProvider',
+      iOSName: 'ActionWidget',
+    );
+  }
+
+
+
 
   Future<void> _saveData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -195,7 +267,9 @@ class ActionProvider with ChangeNotifier {
     _saveData();
     _clampIndex();
     notifyListeners();
+    updateHomeWidget();
   }
+
 
   void addCustomAction(String title, IconData icon, Color color, {bool isPositiveGoal = true}) {
     final id = 'custom_${DateTime.now().millisecondsSinceEpoch}';
@@ -221,7 +295,9 @@ class ActionProvider with ChangeNotifier {
 
     _saveData();
     notifyListeners();
+    updateHomeWidget();
   }
+
 
   void deleteAction(String id) {
     if (_actionOrder.length <= 1) return;
@@ -256,7 +332,9 @@ class ActionProvider with ChangeNotifier {
     _saveData();
     _clampIndex();
     notifyListeners();
+    updateHomeWidget();
   }
+
 
   void incrementActionCount(String id) {
     final state = _actionStates[id];
@@ -268,6 +346,7 @@ class ActionProvider with ChangeNotifier {
       state.history = Map.from(state.history)..[today] = state.count;
       _saveData();
       notifyListeners();
+      updateHomeWidget();
     }
   }
 
@@ -283,6 +362,7 @@ class ActionProvider with ChangeNotifier {
 
       _saveData();
       notifyListeners();
+      updateHomeWidget();
     }
   }
 
@@ -312,6 +392,7 @@ class ActionProvider with ChangeNotifier {
       _actionStates[id] = state.copyWith(goal: newGoal);
       _saveData();
       notifyListeners();
+      updateHomeWidget();
     }
   }
 
@@ -324,6 +405,7 @@ class ActionProvider with ChangeNotifier {
 
       _saveData();
       notifyListeners();
+      updateHomeWidget();
     }
   }
 
@@ -347,6 +429,7 @@ class ActionProvider with ChangeNotifier {
     _saveData();
     _clampIndex();
     notifyListeners();
+    updateHomeWidget();
   }
 
   Future<void> backupToCloud() async {
@@ -405,9 +488,11 @@ class ActionProvider with ChangeNotifier {
 
       AnalyticsService.instance.logCloudRestore(Platform.isAndroid ? 'Android' : 'iOS');
 
-      await _saveData();
+      _saveData();
       notifyListeners();
+      updateHomeWidget();
       return true;
+
     } catch (e) {
       debugPrint('Restore Error: $e');
       return false;
@@ -470,9 +555,62 @@ class ActionProvider with ChangeNotifier {
       await _saveData();
       await prefs.setString('last_saved_date', today);
       notifyListeners();
+      updateHomeWidget();
       return true;
+
     }
     return false;
+  }
+
+  Future<void> syncFromWidget() async {
+    const groupId = 'group.com.pooha302.didit';
+    await HomeWidget.setAppGroupId(groupId);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+    
+    bool hasChanges = false;
+
+    // For Android (and generic fallback), sync from SharedPreferences first 
+    // because background callback updates the shared JSON string.
+    final savedStates = prefs.getString('action_states_v2');
+    if (savedStates != null) {
+      final Map<String, dynamic> decoded = jsonDecode(savedStates);
+      for (var entry in decoded.entries) {
+        final newState = ActionData.fromJson(entry.value);
+        final currentState = _actionStates[entry.key];
+        
+        // If the count on disk is higher than in memory, update memory
+        if (currentState != null && newState.count > currentState.count) {
+          debugPrint("Syncing ${entry.key} from disk: App(${currentState.count}) -> Disk(${newState.count})");
+          _actionStates[entry.key] = newState;
+          hasChanges = true;
+        }
+      }
+    }
+    
+    // Original iOS-specific logic (individual keys check)
+    if (Platform.isIOS) {
+      for (var id in _actionStates.keys) {
+        final state = _actionStates[id];
+        if (state == null) continue;
+        
+        final widgetCount = await HomeWidget.getWidgetData<int>('count_$id');
+        if (widgetCount != null && widgetCount > state.count) {
+          debugPrint("Syncing $id from widget individual key: App(${state.count}) -> Widget($widgetCount)");
+          state.count = widgetCount;
+          state.lastTapTime = DateTime.now(); // Approximate time
+          
+          final today = DateTime.now().toIso8601String().split('T')[0];
+          state.history = Map.from(state.history)..[today] = state.count;
+          
+          hasChanges = true;
+        }
+      }
+    }
+    
+    if (hasChanges) {
+      notifyListeners();
+    }
   }
 
 }

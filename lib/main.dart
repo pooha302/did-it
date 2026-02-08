@@ -12,6 +12,9 @@ import 'providers/theme_provider.dart';
 import 'providers/locale_provider.dart';
 import 'screens/main_screen.dart';
 import 'services/ad_service.dart';
+import 'services/widget_service.dart';
+import 'package:home_widget/home_widget.dart';
+
 import 'constants/app_colors.dart';
 import 'dart:io';
 
@@ -62,6 +65,18 @@ void main() async {
     debugPrint("✅ AdService Initialized");
   } catch (e) {
     debugPrint("❌ AdService Failed: $e");
+  }
+
+  // Register Home Widget Interaction (Always register this)
+  try {
+    debugPrint("🏠 Registering HomeWidget Background Callback...");
+    if (Platform.isIOS) {
+      await HomeWidget.setAppGroupId('group.com.pooha302.didit');
+    }
+    await HomeWidget.registerBackgroundCallback(homeWidgetBackgroundCallback);
+    debugPrint("✅ HomeWidget Background Callback Registered");
+  } catch (e) {
+    debugPrint("❌ HomeWidget Registration Failed: $e");
   }
   
   debugPrint("🏁 Running App...");

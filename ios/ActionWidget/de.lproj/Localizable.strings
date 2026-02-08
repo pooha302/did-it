@@ -1,0 +1,12 @@
+"DiditWidget_Name" = "Did it Widget";
+"DiditWidget_Desc" = "Dein heutiger Fortschritt auf einen Blick.";
+"SelectAction_Title" = "Aktion wählen";
+"SelectAction_Desc" = "Wähle eine Aktion aus.";
+"Action_Label" = "Aktion 1";
+"Action2_Label" = "Aktion 2";
+"Action3_Label" = "Aktion 3";
+"Action4_Label" = "Aktion 4";
+"Action_None" = "Keine";
+"Action_Empty_State" = "Fügen Sie Aktionen in den Einstellungen hinzu
+oder bearbeiten Sie das Widget.";
+"Action" = "Aktion";

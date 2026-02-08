@@ -1,0 +1,12 @@
+"SelectAction_Title" = "アクションを選択";
+"SelectAction_Desc" = "トラッキングするアクションを選択してください。";
+"Action_Label" = "アクション1";
+"Action2_Label" = "アクション2";
+"Action3_Label" = "アクション3";
+"Action4_Label" = "アクション4";
+"Action_None" = "選択なし";
+"Action_Empty_State" = "設定またはウィジェット編集で
+アクションを追加してください。";
+"DiditWidget_Name" = "Did itウィジェット";
+"DiditWidget_Desc" = "今日の進捗を一目で確認できます。";
+"Action" = "アクション";
