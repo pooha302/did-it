@@ -55,6 +55,44 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
     if (savedStates != null) {
       final Map<String, dynamic> states = jsonDecode(savedStates);
       
+      // Check if date has changed and reset if necessary
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      final lastSavedDate = prefs.getString('last_saved_date');
+      
+      if (lastSavedDate != null && lastSavedDate != today) {
+        debugPrint('WIDGET: Date changed from $lastSavedDate to $today. Resetting all counts...');
+        
+        // Reset all action counts and save yesterday's data to history
+        for (var entry in states.entries) {
+          final stateMap = entry.value;
+          final history = Map<String, dynamic>.from(stateMap['history'] ?? {});
+          
+          // Save yesterday's count to history
+          history[lastSavedDate] = stateMap['count'] ?? 0;
+          stateMap['history'] = history;
+          
+          // Reset count to 0
+          stateMap['count'] = 0;
+          
+          // Reset lastTapTime
+          stateMap['lastTapTime'] = null;
+          
+          // Recover reset credits if needed
+          if ((stateMap['resetCredits'] ?? 0) < 1) {
+            stateMap['resetCredits'] = 1;
+          }
+          
+          // Update widget data for this action
+          await HomeWidget.saveWidgetData<int>('count_${entry.key}', 0);
+        }
+        
+        // Save updated states and new date
+        await prefs.setString('action_states_v2', jsonEncode(states));
+        await prefs.setString('last_saved_date', today);
+        
+        debugPrint('WIDGET: Reset complete. All counts set to 0.');
+      }
+      
       if (targetId == null || !states.containsKey(targetId)) {
         // Fallback: Find current active action in app
         for (var entry in states.entries) {
@@ -69,7 +107,6 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
         final stateMap = states[targetId];
         stateMap['count'] = (stateMap['count'] ?? 0) + 1;
         
-        final today = DateTime.now().toIso8601String().split('T')[0];
         final history = Map<String, dynamic>.from(stateMap['history'] ?? {});
         history[today] = stateMap['count'];
         stateMap['history'] = history;

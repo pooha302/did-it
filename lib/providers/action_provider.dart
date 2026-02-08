@@ -109,6 +109,11 @@ class ActionProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isResetting = false;
+  String _currentDateStr = '';
+
+  // ... (existing getters) ...
+
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
     final savedStates = prefs.getString('action_states_v2');
@@ -116,6 +121,9 @@ class ActionProvider with ChangeNotifier {
     final savedCustom = prefs.getString('custom_actions');
     final today = DateTime.now().toIso8601String().split('T')[0];
     final savedDate = prefs.getString('last_saved_date');
+
+    // Initialize current date string
+    _currentDateStr = savedDate ?? today;
 
     final savedDeleted = prefs.getStringList('deleted_predefined_action_ids');
 
@@ -146,11 +154,11 @@ class ActionProvider with ChangeNotifier {
         _actionStates[entry.key] = ActionData.fromJson(entry.value);
       }
 
-    // Initial daily reset check
-    await checkAndResetDailyData();
-    
-    // Sync any changes from widget while app was closed
-    await syncFromWidget();
+      // Initial daily reset check
+      await checkAndResetDailyData();
+      
+      // Sync any changes from widget while app was closed
+      await syncFromWidget();
     }
     
     // Ensure all current ACTIONS (not deleted) and custom actions are in the order list
@@ -181,6 +189,54 @@ class ActionProvider with ChangeNotifier {
     
     notifyListeners();
     await updateHomeWidget();
+  }
+
+  /// Checks if the date has changed since the last save and resets daily data if necessary.
+  Future<bool> checkAndResetDailyData({bool force = false}) async {
+    if (_isResetting) return false;
+
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    
+    // Use in-memory date if available, otherwise fetch from prefs (should overlap)
+    if (_currentDateStr.isEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        _currentDateStr = prefs.getString('last_saved_date') ?? today;
+    }
+
+    if (_currentDateStr != today || force) {
+      _isResetting = true;
+      try {
+        // When forcing reset for testing, use yesterday's date to properly simulate midnight transition
+        final String historyDateKey = force && _currentDateStr == today
+            ? DateTime.now().subtract(const Duration(days: 1)).toIso8601String().split('T')[0]
+            : _currentDateStr;
+        
+        debugPrint("📅 Date changed from $_currentDateStr to $today. Resetting daily data...");
+        
+        for (var state in _actionStates.values) {
+          // Save final count of the previous day to history
+          state.history = Map.from(state.history)..[historyDateKey] = state.count;
+          
+          state.count = 0;
+          state.lastTapTime = null;
+          // Recover to 1 credit only if it's currently 0
+          if (state.resetCredits < 1) {
+            state.resetCredits = 1;
+          }
+        }
+        
+        _currentDateStr = today;
+        final prefs = await SharedPreferences.getInstance();
+        await _saveData();
+        await prefs.setString('last_saved_date', today);
+        notifyListeners();
+        updateHomeWidget();
+        return true;
+      } finally {
+        _isResetting = false;
+      }
+    }
+    return false;
   }
 
   Future<void> updateHomeWidget() async {
@@ -554,36 +610,7 @@ class ActionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Checks if the date has changed since the last save and resets daily data if necessary.
-  Future<bool> checkAndResetDailyData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final today = DateTime.now().toIso8601String().split('T')[0];
-    final savedDate = prefs.getString('last_saved_date');
 
-    if (savedDate != null && savedDate != today) {
-      debugPrint("📅 Date changed from $savedDate to $today. Resetting daily data...");
-      
-      for (var state in _actionStates.values) {
-        // Save final count of the previous day to history
-        state.history = Map.from(state.history)..[savedDate] = state.count;
-        
-        state.count = 0;
-        state.lastTapTime = null;
-        // Recover to 1 credit only if it's currently 0
-        if (state.resetCredits < 1) {
-          state.resetCredits = 1;
-        }
-      }
-      
-      await _saveData();
-      await prefs.setString('last_saved_date', today);
-      notifyListeners();
-      updateHomeWidget();
-      return true;
-
-    }
-    return false;
-  }
 
   Future<void> syncFromWidget() async {
     const groupId = 'group.com.pooha302.didit';
