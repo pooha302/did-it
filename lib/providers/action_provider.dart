@@ -432,6 +432,29 @@ class ActionProvider with ChangeNotifier {
     updateHomeWidget();
   }
 
+  void updateHistory(String id, DateTime date, int newCount) {
+    final state = _actionStates[id];
+    if (state == null) return;
+
+    final dateStr = date.toIso8601String().split('T')[0];
+    final todayStr = DateTime.now().toIso8601String().split('T')[0];
+
+    // Update history
+    state.history = Map.from(state.history)..[dateStr] = newCount;
+
+    // If updating today, also update the main count
+    if (dateStr == todayStr) {
+      state.count = newCount;
+    }
+    
+    // Log manual update
+    debugPrint("Manual history update for $id on $dateStr: $newCount");
+
+    _saveData();
+    notifyListeners();
+    updateHomeWidget();
+  }
+
   Future<void> backupToCloud() async {
     try {
       final Map<String, dynamic> data = {

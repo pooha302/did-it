@@ -22,6 +22,8 @@ import '../widgets/add_action_sheet.dart';
 import '../services/ad_service.dart';
 import '../services/analytics_service.dart';
 import '../services/widget_intro_service.dart';
+import 'package:intl/intl.dart';
+import '../models/action.dart';
 
 // App initializer that shows splash screen while loading
 class AppInitializer extends StatefulWidget {
@@ -512,6 +514,189 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  void _showHistoryEditor(
+    BuildContext context, 
+    ActionProvider provider, 
+    ActionConfig action,
+    AppLocaleProvider localeProvider,
+  ) {
+    // Helper to strip time
+    DateTime normalizeDate(DateTime d) => DateTime(d.year, d.month, d.day);
+
+    // Initial setup with normalized dates to avoid assertion errors
+    final DateTime now = DateTime.now();
+    final DateTime yesterday = normalizeDate(now.subtract(const Duration(days: 1)));
+    
+    DateTime selectedDate = yesterday;
+    final TextEditingController controller = TextEditingController();
+    final FocusNode focusNode = FocusNode();
+
+    // Helper to update text based on date
+    void updateCountForDate(DateTime date) {
+      final dateStr = date.toIso8601String().split('T')[0];
+      final state = provider.actionStates[action.id]!;
+      int val = 0;
+      
+      if (state.history.containsKey(dateStr)) {
+        val = state.history[dateStr]!;
+      } else if (dateStr == normalizeDate(now).toIso8601String().split('T')[0]) {
+        // Even though we block today in picker, this logic handles if we ever allow it
+        val = state.count;
+      }
+      
+      controller.text = val.toString();
+    }
+
+    // Initialize text
+    updateCountForDate(selectedDate);
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Custom Theme for Calendar
+                    SizedBox(
+                      height: 320, // Constrain height for CalendarDatePicker
+                      width: 320, // Constrain width
+                      child: Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: isDark 
+                            ? ColorScheme.dark(
+                                primary: action.color,
+                                onPrimary: Colors.black,
+                                surface: const Color(0xFF1F2937),
+                                onSurface: Colors.white,
+                              )
+                            : ColorScheme.light(
+                                primary: action.color,
+                                onPrimary: Colors.white,
+                                surface: Colors.white,
+                                onSurface: Colors.black,
+                              ),
+                        ),
+                        child: CalendarDatePicker(
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2020),
+                          lastDate: yesterday,
+                          onDateChanged: (newDate) {
+                            setState(() {
+                              selectedDate = newDate;
+                              updateCountForDate(newDate);
+                            });
+                            // Temporarily unfocus to allow date picking without keyboard popping up annoyance
+                            focusNode.unfocus();
+                          },
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Input Field Container
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: focusNode.hasFocus ? action.color : Colors.transparent,
+                          width: 1.5
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(LucideIcons.edit3, size: 18, color: isDark ? Colors.white70 : Colors.black54),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              keyboardType: TextInputType.number,
+                              style: GoogleFonts.outfit(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(5),
+                              ],
+                              decoration: InputDecoration(
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                                border: InputBorder.none,
+                                hintText: "0",
+                                hintStyle: TextStyle(color: isDark ? Colors.white24 : Colors.black.withOpacity(0.24)),
+                              ),
+                              onTap: () => setState(() {}), // Trigger rebuild to show focus border
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 12),
+                    
+                    // Ad Guide Text
+                    Text(
+                      localeProvider.tr('edit_history_ad_guide'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white54 : Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(localeProvider.tr('cancel'), style: TextStyle(color: Colors.grey[600])),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final int? val = int.tryParse(controller.text);
+                    if (val != null && val >= 0) {
+                      // Show Ad to unlock edit
+                      AdService.instance.showEditHistoryAd(
+                        onRewardEarned: () {
+                          provider.updateHistory(action.id, selectedDate, val);
+                          Navigator.pop(context);
+                        }
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: action.color,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: Text(
+                    localeProvider.tr('save'),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ActionProvider>();
@@ -681,7 +866,24 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
                           // Goals Button (Top Right)
                           provider.showStats
-                              ? const SizedBox(width: 46)
+                              ? Material(
+                                  color: const Color(0xFF9D4EDD).withOpacity(0.15),
+                                  shape: RoundedRectangleBorder(
+                                    side: BorderSide(
+                                      color: const Color(0xFF9D4EDD).withOpacity(0.3),
+                                      width: 1.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: InkWell(
+                                    onTap: () => _showHistoryEditor(context, provider, activeAction, localeProvider),
+                                    borderRadius: BorderRadius.circular(14),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(12),
+                                      child: Icon(LucideIcons.pencil, size: 22, color: Colors.white),
+                                    ),
+                                  ),
+                                )
                               : Material(
                                   key: _actionsKey,
                                   color: const Color(0xFF9D4EDD).withOpacity(0.15), // Purple

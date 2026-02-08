@@ -10,6 +10,12 @@ import 'package:intl/intl.dart';
 import 'dart:math' as math;
 import '../providers/theme_provider.dart';
 
+// Chart layout constants
+const double _chartLeftPadding = 25.0;
+const double _chartRightPadding = 45.0;
+const double _chartTopPadding = 5.0;
+const double _chartBottomPadding = 30.0;
+
 class ActionStatsView extends StatelessWidget {
   final ActionConfig action;
 
@@ -34,160 +40,160 @@ class ActionStatsView extends StatelessWidget {
     final avg = data.isEmpty ? 0.0 : data.reduce((a, b) => a + b) / data.length;
     
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-      child: Column(
-        children: [
-          // Stats Summary (Max, Min, Avg)
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                 _buildStatItem(
-                  context, 
-                  localeProvider.tr('max'), 
-                  hasData ? "${data.reduce(math.max)}" : "-", 
-                  action.color,
-                  isDark
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          child: Column(
+            children: [
+              // Stats Summary (Max, Min, Avg)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                _buildVerticalDivider(isDark),
-                _buildStatItem(
-                  context, 
-                  localeProvider.tr('min'), 
-                  hasData ? "${data.where((e) => e > 0).reduce(math.min)}" : "-", 
-                  action.color.withOpacity(0.7),
-                  isDark
-                ),
-                _buildVerticalDivider(isDark),
-                _buildStatItem(
-                  context, 
-                  localeProvider.tr('avg'), 
-                  hasData ? avg.toStringAsFixed(1) : "-", 
-                  action.color.withOpacity(0.7),
-                  isDark
-                ),
-              ],
-            ),
-          ),
-          
-          const SizedBox(height: 24),
-
-          // Period Selector
-          Container(
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ...[7, 14, 30].map((period) {
-                  final isSelected = provider.statsPeriod == period;
-                  return GestureDetector(
-                    onTap: () => provider.setStatsPeriod(period),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: isSelected ? action.color : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: isSelected ? [
-                          BoxShadow(color: action.color.withOpacity(0.3), blurRadius: 8, spreadRadius: 1)
-                        ] : null,
-                      ),
-                      child: Text(
-                        "$period${localeProvider.tr('days')}",
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                     _buildStatItem(
+                      context, 
+                      localeProvider.tr('max'), 
+                      hasData ? "${data.reduce(math.max)}" : "-", 
+                      action.color,
+                      isDark
                     ),
-                  );
-                }),
-                // Custom Period Button
-                Builder(
-                  builder: (context) {
-                    final isCustom = ![7, 14, 30].contains(provider.statsPeriod);
-                    return GestureDetector(
-                      onTap: () => _showCustomPeriodDialog(context, provider, localeProvider, action.color),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isCustom ? action.color : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: isCustom ? [
-                            BoxShadow(color: action.color.withOpacity(0.3), blurRadius: 8, spreadRadius: 1)
-                          ] : null,
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              isCustom ? "${provider.statsPeriod}${localeProvider.tr('days')}" : localeProvider.tr('custom'),
-                              style: TextStyle(
-                                color: isCustom ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
-                                fontSize: 12,
-                                fontWeight: isCustom ? FontWeight.bold : FontWeight.normal,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              LucideIcons.pencil, 
-                              size: 10, 
-                              color: isCustom ? Colors.white : (isDark ? Colors.white70 : Colors.black54)
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-                ),
-              ],
-            ),
-          ),
-          
-          const SizedBox(height: 24),
-
-          // The Chart - Expanding to fill available space
-          Expanded(
-            child: hasData ? SizedBox(
-              width: double.infinity,
-              child: CustomPaint(
-                painter: LineChartPainter(
-                  data: data,
-                  color: action.color,
-                  goal: state.goal,
-                  isDark: isDark,
-                  goalLabel: localeProvider.tr('goal_label'),
+                    _buildVerticalDivider(isDark),
+                    _buildStatItem(
+                      context, 
+                      localeProvider.tr('min'), 
+                      hasData ? "${data.where((e) => e > 0).reduce(math.min)}" : "-", 
+                      action.color.withOpacity(0.7),
+                      isDark
+                    ),
+                    _buildVerticalDivider(isDark),
+                    _buildStatItem(
+                      context, 
+                      localeProvider.tr('avg'), 
+                      hasData ? avg.toStringAsFixed(1) : "-", 
+                      action.color.withOpacity(0.7),
+                      isDark
+                    ),
+                  ],
                 ),
               ),
-            ) : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.bar_chart_rounded, size: 64, color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
-                const SizedBox(height: 16),
-                Text(
-                  localeProvider.tr('no_data'),
-                  style: TextStyle(
-                    color: isDark ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.3),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+              
+              const SizedBox(height: 24),
+
+              // Period Selector
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ...[7, 14, 30].map((period) {
+                      final isSelected = provider.statsPeriod == period;
+                      return GestureDetector(
+                        onTap: () => provider.setStatsPeriod(period),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isSelected ? action.color : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: isSelected ? [
+                              BoxShadow(color: action.color.withOpacity(0.3), blurRadius: 8, spreadRadius: 1)
+                            ] : null,
+                          ),
+                          child: Text(
+                            "$period${localeProvider.tr('days')}",
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
+                              fontSize: 12,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                    // Custom Period Button
+                    Builder(
+                      builder: (context) {
+                        final isCustom = ![7, 14, 30].contains(provider.statsPeriod);
+                        return GestureDetector(
+                          onTap: () => _showCustomPeriodDialog(context, provider, localeProvider, action.color),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isCustom ? action.color : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: isCustom ? [
+                                BoxShadow(color: action.color.withOpacity(0.3), blurRadius: 8, spreadRadius: 1)
+                              ] : null,
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  isCustom ? "${provider.statsPeriod}${localeProvider.tr('days')}" : localeProvider.tr('custom'),
+                                  style: TextStyle(
+                                    color: isCustom ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
+                                    fontSize: 12,
+                                    fontWeight: isCustom ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  LucideIcons.pencil, 
+                                  size: 10, 
+                                  color: isCustom ? Colors.white : (isDark ? Colors.white70 : Colors.black54)
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+
+              // The Chart - Expanding to fill available space
+              Expanded(
+                child: hasData ? SizedBox(
+                  width: double.infinity,
+                  child: CustomPaint(
+                    painter: LineChartPainter(
+                      data: data,
+                      color: action.color,
+                      goal: state.goal,
+                      isDark: isDark,
+                      goalLabel: localeProvider.tr('goal_label'),
+                    ),
+                  ),
+                ) : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.bar_chart_rounded, size: 64, color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+                    const SizedBox(height: 16),
+                    Text(
+                      localeProvider.tr('no_data'),
+                      style: TextStyle(
+                        color: isDark ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.3),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Bottom padding to ensure chart doesn't touch the bottom indicator too closely
+              const SizedBox(height: 20),
+            ],
           ),
-          
-          // Bottom padding to ensure chart doesn't touch the bottom indicator too closely
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
+        );
   }
 
   Widget _buildStatItem(BuildContext context, String label, String value, Color color, bool isDark) {
@@ -314,12 +320,8 @@ class LineChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const double bottomPadding = 30.0;
-    const double topPadding = 5.0;
-    const double leftPadding = 25.0; // Restored to previous value
-    const double rightPadding = 45.0; // Restored and slightly increased for Goal label
-    final double chartHeight = size.height - bottomPadding - topPadding;
-    final double chartWidth = size.width - leftPadding - rightPadding;
+    final double chartHeight = size.height - _chartBottomPadding - _chartTopPadding;
+    final double chartWidth = size.width - _chartLeftPadding - _chartRightPadding;
     
     final baseTextColor = isDark ? Colors.white : Colors.black;
 
@@ -331,8 +333,8 @@ class LineChartPainter extends CustomPainter {
 
     final fillPaint = Paint()
       ..shader = ui.Gradient.linear(
-        Offset(leftPadding, topPadding + chartHeight * 0.2),
-        Offset(leftPadding, topPadding + chartHeight),
+        Offset(_chartLeftPadding, _chartTopPadding + chartHeight * 0.2),
+        Offset(_chartLeftPadding, _chartTopPadding + chartHeight),
         [color.withOpacity(0.3), color.withOpacity(0.0)],
       )
       ..style = PaintingStyle.fill;
@@ -353,16 +355,16 @@ class LineChartPainter extends CustomPainter {
     final skip = (data.length / dateLabelsCount).ceil();
 
     for (int i = 0; i < data.length; i++) {
-        final x = leftPadding + (i * widthStep);
-        final y = topPadding + chartHeight - (data[i] / maxVal * chartHeight);
+        final x = _chartLeftPadding + (i * widthStep);
+        final y = _chartTopPadding + chartHeight - (data[i] / maxVal * chartHeight);
         
         if (i == 0) {
             path.moveTo(x, y);
-            fillPath.moveTo(x, topPadding + chartHeight);
+            fillPath.moveTo(x, _chartTopPadding + chartHeight);
             fillPath.lineTo(x, y);
         } else {
-            final prevX = leftPadding + ((i - 1) * widthStep);
-            final prevY = topPadding + chartHeight - (data[i - 1] / maxVal * chartHeight);
+            final prevX = _chartLeftPadding + ((i - 1) * widthStep);
+            final prevY = _chartTopPadding + chartHeight - (data[i - 1] / maxVal * chartHeight);
             
             path.cubicTo(
                 prevX + widthStep / 2, prevY,
@@ -377,7 +379,7 @@ class LineChartPainter extends CustomPainter {
         }
 
         if (i == data.length - 1) {
-            fillPath.lineTo(x, topPadding + chartHeight);
+            fillPath.lineTo(x, _chartTopPadding + chartHeight);
             fillPath.close();
         }
 
@@ -405,7 +407,7 @@ class LineChartPainter extends CustomPainter {
 
           dateLabelPainter.paint(
             canvas, 
-            Offset(xPos, topPadding + chartHeight + 8)
+            Offset(xPos, _chartTopPadding + chartHeight + 8)
           );
         }
     }
@@ -419,8 +421,8 @@ class LineChartPainter extends CustomPainter {
     final List<double> yValues = [0, maxVal / 2, maxVal];
     
     for (final val in yValues) {
-      final y = topPadding + chartHeight - (val / maxVal * chartHeight);
-      canvas.drawLine(Offset(leftPadding, y), Offset(leftPadding + chartWidth, y), gridPaint);
+      final y = _chartTopPadding + chartHeight - (val / maxVal * chartHeight);
+      canvas.drawLine(Offset(_chartLeftPadding, y), Offset(_chartLeftPadding + chartWidth, y), gridPaint);
       
       final yLabelPainter = TextPainter(
         text: TextSpan(
@@ -435,21 +437,21 @@ class LineChartPainter extends CustomPainter {
       
       yLabelPainter.paint(
         canvas, 
-        Offset(leftPadding - yLabelPainter.width - 8, y - yLabelPainter.height / 2)
+        Offset(_chartLeftPadding - yLabelPainter.width - 8, y - yLabelPainter.height / 2)
       );
     }
 
     // Draw Goal Line
     if (goal > 0) {
-      final goalY = topPadding + chartHeight - (goal / maxVal * chartHeight);
-      if (goalY >= topPadding && goalY <= topPadding + chartHeight) {
+      final goalY = _chartTopPadding + chartHeight - (goal / maxVal * chartHeight);
+      if (goalY >= _chartTopPadding && goalY <= _chartTopPadding + chartHeight) {
         final goalPaint = Paint()
           ..color = color.withOpacity(0.4)
           ..strokeWidth = 1.5
           ..style = PaintingStyle.stroke;
         
-        double dashWidth = 6, dashSpace = 4, startX = leftPadding;
-        while (startX < leftPadding + chartWidth) {
+        double dashWidth = 6, dashSpace = 4, startX = _chartLeftPadding;
+        while (startX < _chartLeftPadding + chartWidth) {
           canvas.drawLine(Offset(startX, goalY), Offset(startX + dashWidth, goalY), goalPaint);
           startX += dashWidth + dashSpace;
         }
@@ -469,7 +471,7 @@ class LineChartPainter extends CustomPainter {
         
         goalLabelPainter.paint(
           canvas, 
-          Offset(leftPadding + chartWidth + 6, goalY - goalLabelPainter.height / 2)
+          Offset(_chartLeftPadding + chartWidth + 6, goalY - goalLabelPainter.height / 2)
         );
       }
     }
