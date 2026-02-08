@@ -230,7 +230,7 @@ class ActionProvider with ChangeNotifier {
         await _saveData();
         await prefs.setString('last_saved_date', today);
         notifyListeners();
-        updateHomeWidget();
+        await updateHomeWidget();
         return true;
       } finally {
         _isResetting = false;
