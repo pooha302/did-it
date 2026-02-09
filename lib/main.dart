@@ -28,20 +28,27 @@ void main() async {
   
   try {
     debugPrint("🔥 Initializing Firebase...");
-    if (Platform.isIOS) {
-      await Firebase.initializeApp(
-        options: ApiKeys.iosFirebaseOptions,
-      );
-    } else {
-      await Firebase.initializeApp(
-        options: ApiKeys.androidFirebaseOptions,
-      );
+    if (Firebase.apps.isEmpty) {
+      if (Platform.isIOS) {
+        await Firebase.initializeApp(
+          options: ApiKeys.iosFirebaseOptions,
+        );
+      } else {
+        await Firebase.initializeApp(
+          options: ApiKeys.androidFirebaseOptions,
+        );
+      }
     }
     await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     isFirebaseInitialized = true;
     debugPrint("✅ Firebase Initialized");
   } catch (e) {
     debugPrint("❌ Firebase Initialization Failed: $e");
+    // If it's already initialized, we can still consider it a success
+    if (Firebase.apps.isNotEmpty) {
+      isFirebaseInitialized = true;
+      debugPrint("⚠️ Using existing Firebase instance");
+    }
   }
 
   try {
