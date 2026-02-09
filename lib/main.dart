@@ -15,6 +15,7 @@ import 'services/ad_service.dart';
 import 'services/widget_service.dart';
 import 'package:home_widget/home_widget.dart';
 
+import 'config/api_keys.dart';
 import 'constants/app_colors.dart';
 import 'dart:io';
 
@@ -29,17 +30,12 @@ void main() async {
     debugPrint("🔥 Initializing Firebase...");
     if (Platform.isIOS) {
       await Firebase.initializeApp(
-        options: const FirebaseOptions(
-          apiKey: 'AIzaSyDUZ6BJVyjuVajQN_kfuF3jl1WAq43fvRc',
-          appId: '1:931227350417:ios:76bc34612723e33b071630',
-          messagingSenderId: '931227350417',
-          projectId: 'did-it-102b0',
-          storageBucket: 'did-it-102b0.firebasestorage.app',
-          iosBundleId: 'com.pooha302.didit',
-        ),
+        options: ApiKeys.iosFirebaseOptions,
       );
     } else {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: ApiKeys.androidFirebaseOptions,
+      );
     }
     await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     isFirebaseInitialized = true;

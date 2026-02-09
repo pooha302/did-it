@@ -16,6 +16,7 @@ proguard-project.txt
 project.properties
 /android/key.properties
 *.jks
+google-services.json
 /android/app/src/main/res/raw/
 /android/app/src/main/assets/
 
@@ -54,3 +55,6 @@ project.properties
 *.temp
 *.tmp
 spec/
+
+# API keys and secrets
+/lib/config/api_keys.dart
