@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../models/action.dart';
 import '../providers/action_provider.dart';
 import '../providers/locale_provider.dart';
-import '../providers/theme_provider.dart';
 
 class ActionGoalTile extends StatefulWidget {
   final ActionConfig action;
@@ -73,7 +72,6 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
     if (actionData == null) return const SizedBox.shrink();
     
     final index = provider.actionOrder.indexOf(widget.action.id);
-    final isDark = context.isDarkMode;
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 300),
@@ -83,12 +81,12 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
         margin: const EdgeInsets.only(bottom: 6),
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: widget.isActive 
-                ? widget.action.color.withOpacity(0.2) 
-                : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))
+                ? widget.action.color.withValues(alpha: 0.2) 
+                : Colors.white.withValues(alpha: 0.05)
           ),
         ),
         child: Row(
@@ -102,10 +100,10 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
                   const SizedBox(height: 8),
                   ReorderableDragStartListener(
                     index: index,
-                    child: Icon(
+                    child: const Icon(
                       LucideIcons.gripVertical,
                       size: 16,
-                      color: isDark ? const Color(0xFF374151) : const Color(0xFFD1D5DB),
+                      color: Color(0xFF374151),
                     ),
                   ),
                 ],
@@ -122,7 +120,7 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: widget.action.color.withOpacity(0.1),
+                          color: widget.action.color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(widget.action.icon, color: widget.action.color, size: 16),
@@ -153,8 +151,8 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
                             child: Switch(
                               value: widget.isActive,
                               onChanged: (_) => widget.onToggle(),
-                              activeColor: widget.action.color,
-                              activeTrackColor: widget.action.color.withOpacity(0.3),
+                              activeThumbColor: widget.action.color,
+                              activeTrackColor: widget.action.color.withValues(alpha: 0.3),
                               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                           ),
@@ -174,9 +172,9 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
                             key: widget.tutorialGoalTypeKey,
                             padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black12.withOpacity(0.1)),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -185,24 +183,22 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
                                   icon: LucideIcons.thumbsUp,
                                   isSelected: actionData.isPositiveGoal,
                                   activeColor: Colors.greenAccent,
-                                  onTap: () {
+                                    onTap: () {
                                     if (!actionData.isPositiveGoal) {
                                       provider.toggleGoalType(widget.action.id);
                                     }
                                   },
-                                  isDark: isDark,
                                 ),
                                 const SizedBox(width: 2),
                                 _typeButton(
                                   icon: LucideIcons.thumbsDown,
                                   isSelected: !actionData.isPositiveGoal,
                                   activeColor: Colors.redAccent,
-                                  onTap: () {
+                                    onTap: () {
                                     if (actionData.isPositiveGoal) {
                                       provider.toggleGoalType(widget.action.id);
                                     }
                                   },
-                                  isDark: isDark,
                                 ),
                               ],
                             ),
@@ -213,9 +209,9 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
                             width: 100,
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.black26 : Colors.white,
+                              color: Colors.black26,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+                              border: Border.all(color: Colors.white12),
                             ),
                             child: Row(
                               children: [
@@ -226,7 +222,7 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
                                     _controller.text = newVal.toString();
                                     widget.onGoalChanged(newVal);
                                   }
-                                }, isDark),
+                                }),
                                 Expanded(
                                   child: TextField(
                                     controller: _controller,
@@ -249,7 +245,7 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
                                   final newVal = current + 1;
                                   _controller.text = newVal.toString();
                                   widget.onGoalChanged(newVal);
-                                }, isDark),
+                                }),
                               ],
                             ),
                           ),
@@ -270,7 +266,6 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
     required bool isSelected,
     required Color activeColor,
     required VoidCallback onTap,
-    required bool isDark,
     GlobalKey? tutorialKey,
   }) {
     return InkWell(
@@ -281,24 +276,22 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? activeColor.withOpacity(isDark ? 0.15 : 0.1) 
-              : Colors.transparent,
+          color: isSelected ? activeColor.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? activeColor.withOpacity(0.5) : (isDark ? Colors.white10 : Colors.black12),
+            color: isSelected ? activeColor.withValues(alpha: 0.5) : Colors.white10,
           ),
         ),
         child: Icon(
           icon,
           size: 16,
-          color: isSelected ? activeColor : (isDark ? Colors.white24 : Colors.black26),
+          color: isSelected ? activeColor : Colors.white24,
         ),
       ),
     );
   }
 
-  Widget _incrementButton(IconData icon, VoidCallback onTap, bool isDark) {
+  Widget _incrementButton(IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -307,7 +300,7 @@ class _ActionGoalTileState extends State<ActionGoalTile> {
         child: Icon(
           icon,
           size: 16,
-          color: isDark ? Colors.white54 : Colors.black45,
+          color: Colors.white54,
         ),
       ),
     );

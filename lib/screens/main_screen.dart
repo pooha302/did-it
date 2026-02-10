@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -11,21 +10,17 @@ import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:flutter/foundation.dart';
 
 import '../providers/action_provider.dart';
-import '../providers/theme_provider.dart';
 import '../providers/locale_provider.dart';
 import '../widgets/action_view.dart';
 import '../widgets/action_stats_view.dart';
 import '../screens/goals_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/splash_screen.dart';
-import '../widgets/add_action_sheet.dart';
 import '../services/ad_service.dart';
 import '../services/analytics_service.dart';
 import '../services/widget_intro_service.dart';
-import 'package:intl/intl.dart';
 import '../models/action.dart';
 
-// App initializer that shows splash screen while loading
 class AppInitializer extends StatefulWidget {
   const AppInitializer({super.key});
 
@@ -130,6 +125,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       await Future.delayed(const Duration(milliseconds: 300));
     }
 
+    if (!mounted) return;
     final lp = context.read<AppLocaleProvider>();
     
     if (_actionViewKey.currentContext == null || 
@@ -185,7 +181,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     targets.add(createTarget(
-      id: "action_card",
+      id: 'action_card',
       key: _actionViewKey,
       align: ContentAlign.bottom,
       titleKey: 'tutorial_record_title',
@@ -194,7 +190,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ));
 
     targets.add(createTarget(
-      id: "reset",
+      id: 'reset',
       key: _resetKey,
       align: ContentAlign.bottom,
       titleKey: 'tutorial_reset_title',
@@ -202,7 +198,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ));
 
     targets.add(createTarget(
-      id: "actions",
+      id: 'actions',
       key: _actionsKey,
       align: ContentAlign.bottom,
       titleKey: 'tutorial_action_title',
@@ -211,7 +207,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ));
 
     targets.add(createTarget(
-      id: "help",
+      id: 'help',
       key: _helpKey,
       align: ContentAlign.top,
       titleKey: 'tutorial_help_title',
@@ -229,7 +225,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       skipWidget: const Padding(
         padding: EdgeInsets.only(right: 20, bottom: 10),
         child: Text(
-          "SKIP",
+          'SKIP',
           style: TextStyle(color: Color(0xFFCEFF00), fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
@@ -241,9 +237,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('has_shown_tutorial', true);
         if (!isReplay) {
-          AnalyticsService.instance.logTutorialComplete('main_screen');
+          await AnalyticsService.instance.logTutorialComplete('main_screen');
           // Show Widget Intro after tutorial
-          if (mounted) WidgetIntroService.checkAndShowIntro(context);
+          if (mounted) await WidgetIntroService.checkAndShowIntro(context);
         }
       },
       onSkip: () {
@@ -262,6 +258,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       beforeFocus: (target) => setState(() => _activeTutorialTargetId = target.identify),
     );
     
+    if (!mounted) return;
     _tutorialCoachMark = tutorial;
     tutorial.show(context: context);
   }
@@ -314,7 +311,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (!mounted) return;
     
     final localeProvider = context.read<AppLocaleProvider>();
-    final isDark = context.isDarkMode;
     final overlay = Overlay.of(context);
     
     late OverlayEntry overlayEntry;
@@ -329,17 +325,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+              color: const Color(0xFF2C2C2E),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                 ),
               ],
               border: Border.all(
-                color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 width: 1,
               ),
             ),
@@ -347,7 +343,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               localeProvider.tr('daily_reset_msg'),
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
-                color: isDark ? Colors.white : Colors.black,
+                color: Colors.white,
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
@@ -368,7 +364,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   void _showNothingToResetBubble(BuildContext context) {
-    final isDark = context.isDarkMode;
     final localeProvider = context.read<AppLocaleProvider>();
     final overlay = Overlay.of(context);
     
@@ -382,11 +377,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white : const Color(0xFF1F2937),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.3 : 0.2),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -395,12 +390,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(LucideIcons.info, size: 14, color: isDark ? Colors.blueAccent : Colors.blue[300]),
+                const Icon(LucideIcons.info, size: 14, color: Colors.blueAccent),
                 const SizedBox(width: 8),
                 Text(
                   localeProvider.tr('nothing_to_reset'),
-                  style: TextStyle(
-                    color: isDark ? Colors.black : Colors.white,
+                  style: const TextStyle(
+                    color: Colors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),
@@ -429,9 +424,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       return;
     }
 
-    final isDark = context.isDarkMode;
     final localeProvider = context.read<AppLocaleProvider>();
-    final dialogBg = isDark ? const Color(0xFF161618) : Colors.white;
+    const dialogBg = Color(0xFF161618);
 
     if (provider.activeState.resetCredits == 0) {
       showGeneralDialog(
@@ -480,7 +474,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       context: context,
       pageBuilder: (ctx, a1, a2) => Container(),
       transitionBuilder: (ctx, a1, a2, child) {
-        var curve = Curves.easeOutBack;
         return Transform.scale(
           scale: a1.value,
           child: Opacity(
@@ -551,8 +544,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     showDialog(
       context: context,
       builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
@@ -570,18 +561,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       width: 320, // Constrain width
                       child: Theme(
                         data: Theme.of(context).copyWith(
-                          colorScheme: isDark 
-                            ? ColorScheme.dark(
+                          colorScheme: ColorScheme.dark(
                                 primary: action.color,
                                 onPrimary: Colors.black,
                                 surface: const Color(0xFF1F2937),
                                 onSurface: Colors.white,
-                              )
-                            : ColorScheme.light(
-                                primary: action.color,
-                                onPrimary: Colors.white,
-                                surface: Colors.white,
-                                onSurface: Colors.black,
                               ),
                         ),
                         child: CalendarDatePicker(
@@ -606,7 +590,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: focusNode.hasFocus ? action.color : Colors.transparent,
@@ -615,7 +599,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       ),
                       child: Row(
                         children: [
-                          Icon(LucideIcons.edit3, size: 18, color: isDark ? Colors.white70 : Colors.black54),
+                          const Icon(LucideIcons.edit3, size: 18, color: Colors.white70),
                           const SizedBox(width: 12),
                           Expanded(
                             child: TextField(
@@ -625,18 +609,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                               style: GoogleFonts.outfit(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : Colors.black,
+                                color: Colors.white,
                               ),
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
                                 LengthLimitingTextInputFormatter(5),
                               ],
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                                contentPadding: EdgeInsets.symmetric(vertical: 4),
                                 border: InputBorder.none,
-                                hintText: "0",
-                                hintStyle: TextStyle(color: isDark ? Colors.white24 : Colors.black.withOpacity(0.24)),
+                                hintText: '0',
+                                hintStyle: TextStyle(color: Colors.white24),
                               ),
                               onTap: () => setState(() {}), // Trigger rebuild to show focus border
                             ),
@@ -650,9 +634,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     // Ad Guide Text
                     Text(
                       localeProvider.tr('edit_history_ad_guide'),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
-                        color: isDark ? Colors.white54 : Colors.grey[600],
+                        color: Colors.white54,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -699,7 +683,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final provider = context.watch<ActionProvider>();
     final activeAction = provider.activeAction;
-    final isDark = context.isDarkMode;
     final localeProvider = context.watch<AppLocaleProvider>();
     
     // Calculate active actions list efficiently
@@ -718,14 +701,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               Text(
                 localeProvider.tr('active_action_none'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                style: const TextStyle(color: Color(0xFF757575), fontSize: 16),
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => GoalsScreen()),
+                    MaterialPageRoute(builder: (context) => const GoalsScreen()),
                   );
                 },
                 icon: const Icon(LucideIcons.settings),
@@ -773,10 +756,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                               ? const SizedBox(width: 46)
                               : Material(
                                   key: _resetKey,
-                                  color: isDark ? Colors.red.withOpacity(0.15) : Colors.red.withOpacity(0.08),
+                                  color: Colors.red.withValues(alpha: 0.15),
                                   shape: RoundedRectangleBorder(
                                     side: BorderSide(
-                                      color: isDark ? Colors.redAccent.withOpacity(0.3) : Colors.redAccent.withOpacity(0.2),
+                                      color: Colors.redAccent.withValues(alpha: 0.3),
                                       width: 1.5,
                                     ),
                                     borderRadius: BorderRadius.circular(14),
@@ -792,7 +775,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                       child: Stack(
                                         clipBehavior: Clip.none,
                                         children: [
-                                          Icon(LucideIcons.rotateCcw, size: 22, color: Colors.white),
+                                          const Icon(LucideIcons.rotateCcw, size: 22, color: Colors.white),
                                           Positioned(
                                             right: -6,
                                             bottom: -6,
@@ -802,7 +785,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                               decoration: BoxDecoration(
                                                 color: Colors.deepPurpleAccent,
                                                 shape: BoxShape.circle,
-                                                border: Border.all(color: isDark ? const Color(0xFF111827) : Colors.white, width: 1.5),
+                                                border: Border.all(color: const Color(0xFF111827), width: 1.5),
                                               ),
                                               child: Center(
                                                 child: provider.activeState.resetCredits > 0
@@ -865,10 +848,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           // Goals Button (Top Right)
                           provider.showStats
                               ? Material(
-                                  color: const Color(0xFF9D4EDD).withOpacity(0.15),
+                                  color: const Color(0xFF9D4EDD).withValues(alpha: 0.15),
                                   shape: RoundedRectangleBorder(
                                     side: BorderSide(
-                                      color: const Color(0xFF9D4EDD).withOpacity(0.3),
+                                      color: const Color(0xFF9D4EDD).withValues(alpha: 0.3),
                                       width: 1.5,
                                     ),
                                     borderRadius: BorderRadius.circular(14),
@@ -884,10 +867,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                 )
                               : Material(
                                   key: _actionsKey,
-                                  color: const Color(0xFF9D4EDD).withOpacity(0.15), // Purple
+                                  color: const Color(0xFF9D4EDD).withValues(alpha: 0.15), // Purple
                                   shape: RoundedRectangleBorder(
                                     side: BorderSide(
-                                      color: const Color(0xFF9D4EDD).withOpacity(0.3), // Purple border
+                                      color: const Color(0xFF9D4EDD).withValues(alpha: 0.3), // Purple border
                                       width: 1.5,
                                     ),
                                     borderRadius: BorderRadius.circular(14),
@@ -897,12 +880,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                       if (_activeTutorialTargetId != null) return;
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => GoalsScreen()),
+                                        MaterialPageRoute(builder: (context) => const GoalsScreen()),
                                       );
                                     },
                                     borderRadius: BorderRadius.circular(14),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(12),
                                       child: Stack(
                                         alignment: Alignment.center,
                                         children: [
@@ -953,7 +936,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                         key: ValueKey('action_view_${action.id}'),
                                         action: action, 
                                         tutorialKey: isCurrentCenter ? _actionViewKey : null,
-                                        showTutorialHand: isCurrentCenter && _activeTutorialTargetId == "action_view",
+                                        showTutorialHand: isCurrentCenter && _activeTutorialTargetId == 'action_view',
                                       ),
                                     ),
                                   ),
@@ -991,7 +974,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           key: _helpKey,
                           child: IconButton(
                             onPressed: () => _showTutorial(isReplay: true),
-                            icon: Stack(
+                            icon: const Stack(
                               clipBehavior: Clip.none,
                               alignment: Alignment.center,
                               children: [
@@ -1024,7 +1007,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           decoration: BoxDecoration(
                             color: isActive 
                               ? const Color(0xFFCEFF00) 
-                              : (isDark ? Colors.white24 : Colors.black12),
+                              : Colors.white24,
                             borderRadius: BorderRadius.circular(3),
                           ),
                         );
@@ -1037,11 +1020,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   margin: const EdgeInsets.fromLTRB(24, 0, 24, 34),
                   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                    color: const Color(0xFF1F2937),
                     borderRadius: BorderRadius.circular(32),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -1051,28 +1034,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Stats Mode Button
-                      IconButton(
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
+                       IconButton(
+                        onPressed: () async {
+                          await HapticFeedback.lightImpact();
                           provider.setShowStats(true);
-                          AnalyticsService.instance.logViewStats(provider.activeAction.id);
+                          await AnalyticsService.instance.logViewStats(provider.activeAction.id);
                         },
                         icon: Icon(
                           LucideIcons.barChart2,
-                          color: provider.showStats ? const Color(0xFFCEFF00) : (isDark ? Colors.white54 : Colors.grey),
+                          color: provider.showStats ? const Color(0xFFCEFF00) : Colors.white54,
                           size: 24,
                         ),
                       ),
                       
                       // Record Mode Button
                       IconButton(
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
+                        onPressed: () async {
+                          await HapticFeedback.lightImpact();
                           provider.setShowStats(false);
                         },
                         icon: Icon(
                           LucideIcons.timer,
-                          color: !provider.showStats ? const Color(0xFFCEFF00) : (isDark ? Colors.white54 : Colors.grey),
+                          color: !provider.showStats ? const Color(0xFFCEFF00) : Colors.white54,
                           size: 24,
                         ),
                       ),
@@ -1093,9 +1076,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                             });
                           }
                         },
-                        icon: Icon(
+                        icon: const Icon(
                           LucideIcons.settings,
-                          color: isDark ? Colors.white54 : Colors.grey,
+                          color: Colors.white54,
                           size: 24,
                         ),
                       ),

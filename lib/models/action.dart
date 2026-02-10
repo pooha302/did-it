@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-
-
 class ActionConfig {
   final String id;
   final String title;
@@ -26,8 +24,8 @@ class ActionConfig {
         'icon': icon.codePoint,
         'fontFamily': icon.fontFamily,
         'fontPackage': icon.fontPackage,
-        'color': color.value,
-        'glowColor': glowColor.value,
+        'color': color.toARGB32(),
+        'glowColor': glowColor.toARGB32(),
         'isCustom': isCustom,
       };
 
@@ -109,7 +107,7 @@ class ActionData {
   }
 }
 
-final List<ActionConfig> ACTIONS = [
+final List<ActionConfig> baseActions = [
   ActionConfig(
     id: 'coffee',
     title: 'action_coffee',

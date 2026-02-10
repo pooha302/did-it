@@ -1,4 +1,4 @@
-import 'package:didit/providers/locale_provider.dart';
+import '../providers/locale_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -6,9 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/action.dart';
 import '../providers/action_provider.dart';
 import 'dart:ui' as ui;
-import 'package:intl/intl.dart';
 import 'dart:math' as math;
-import '../providers/theme_provider.dart';
 
 // Chart layout constants
 const double _chartLeftPadding = 25.0;
@@ -26,7 +24,6 @@ class ActionStatsView extends StatelessWidget {
     final provider = context.watch<ActionProvider>();
     final localeProvider = context.watch<AppLocaleProvider>();
     final state = provider.actionStates[action.id]!;
-    final isDark = context.isDarkMode;
     
     // Get history data and force sync the last day (Today) with current count
     final List<int> data = List.from(provider.getHistoryData(action.id));
@@ -47,7 +44,7 @@ class ActionStatsView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -56,25 +53,22 @@ class ActionStatsView extends StatelessWidget {
                      _buildStatItem(
                       context, 
                       localeProvider.tr('max'), 
-                      hasData ? "${data.reduce(math.max)}" : "-", 
+                      hasData ? '${data.reduce(math.max)}' : '-', 
                       action.color,
-                      isDark
                     ),
-                    _buildVerticalDivider(isDark),
+                    _buildVerticalDivider(),
                     _buildStatItem(
                       context, 
                       localeProvider.tr('min'), 
-                      hasData ? "${data.where((e) => e > 0).reduce(math.min)}" : "-", 
-                      action.color.withOpacity(0.7),
-                      isDark
+                      hasData ? '${data.where((e) => e > 0).reduce(math.min)}' : '-', 
+                      action.color.withValues(alpha: 0.7),
                     ),
-                    _buildVerticalDivider(isDark),
+                    _buildVerticalDivider(),
                     _buildStatItem(
                       context, 
                       localeProvider.tr('avg'), 
-                      hasData ? avg.toStringAsFixed(1) : "-", 
-                      action.color.withOpacity(0.7),
-                      isDark
+                      hasData ? avg.toStringAsFixed(1) : '-', 
+                      action.color.withValues(alpha: 0.7),
                     ),
                   ],
                 ),
@@ -86,7 +80,7 @@ class ActionStatsView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -97,18 +91,18 @@ class ActionStatsView extends StatelessWidget {
                       return GestureDetector(
                         onTap: () => provider.setStatsPeriod(period),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: isSelected ? action.color : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                             boxShadow: isSelected ? [
-                              BoxShadow(color: action.color.withOpacity(0.3), blurRadius: 8, spreadRadius: 1)
+                              BoxShadow(color: action.color.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 1)
                             ] : null,
                           ),
                           child: Text(
-                            "$period${localeProvider.tr('days')}",
+                            '$period${localeProvider.tr('days')}',
                             style: TextStyle(
-                              color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
+                              color: isSelected ? Colors.white : Colors.white70,
                               fontSize: 12,
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                             ),
@@ -123,20 +117,20 @@ class ActionStatsView extends StatelessWidget {
                         return GestureDetector(
                           onTap: () => _showCustomPeriodDialog(context, provider, localeProvider, action.color),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: isCustom ? action.color : Colors.transparent,
                               borderRadius: BorderRadius.circular(8),
                               boxShadow: isCustom ? [
-                                BoxShadow(color: action.color.withOpacity(0.3), blurRadius: 8, spreadRadius: 1)
+                                BoxShadow(color: action.color.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 1)
                               ] : null,
                             ),
                             child: Row(
                               children: [
                                 Text(
-                                  isCustom ? "${provider.statsPeriod}${localeProvider.tr('days')}" : localeProvider.tr('custom'),
+                                  isCustom ? '${provider.statsPeriod}${localeProvider.tr('days')}' : localeProvider.tr('custom'),
                                   style: TextStyle(
-                                    color: isCustom ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
+                                    color: isCustom ? Colors.white : Colors.white70,
                                     fontSize: 12,
                                     fontWeight: isCustom ? FontWeight.bold : FontWeight.normal,
                                   ),
@@ -145,7 +139,7 @@ class ActionStatsView extends StatelessWidget {
                                 Icon(
                                   LucideIcons.pencil, 
                                   size: 10, 
-                                  color: isCustom ? Colors.white : (isDark ? Colors.white70 : Colors.black54)
+                                  color: isCustom ? Colors.white : Colors.white70,
                                 ),
                               ],
                             ),
@@ -168,19 +162,18 @@ class ActionStatsView extends StatelessWidget {
                       data: data,
                       color: action.color,
                       goal: state.goal,
-                      isDark: isDark,
                       goalLabel: localeProvider.tr('goal_label'),
                     ),
                   ),
                 ) : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.bar_chart_rounded, size: 64, color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+                    Icon(Icons.bar_chart_rounded, size: 64, color: Colors.white.withValues(alpha: 0.05)),
                     const SizedBox(height: 16),
                     Text(
                       localeProvider.tr('no_data'),
                       style: TextStyle(
-                        color: isDark ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -196,13 +189,13 @@ class ActionStatsView extends StatelessWidget {
         );
   }
 
-  Widget _buildStatItem(BuildContext context, String label, String value, Color color, bool isDark) {
+  Widget _buildStatItem(BuildContext context, String label, String value, Color color) {
     return Column(
       children: [
         Text(
           label,
-          style: TextStyle(
-            color: isDark ? Colors.white54 : Colors.black54,
+          style: const TextStyle(
+            color: Colors.white54,
             fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
@@ -220,11 +213,11 @@ class ActionStatsView extends StatelessWidget {
     );
   }
 
-  Widget _buildVerticalDivider(bool isDark) {
+  Widget _buildVerticalDivider() {
     return Container(
       height: 30,
       width: 1,
-      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+      color: Colors.white.withValues(alpha: 0.1),
     );
   }
 
@@ -246,33 +239,35 @@ class ActionStatsView extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
             actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: controller,
-                  keyboardType: TextInputType.number,
-                  autofocus: true,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(3),
-                  ],
-                  decoration: InputDecoration(
-                    suffixText: localeProvider.tr('days'),
-                    hintText: "7-365",
-                    errorText: (isNotEmpty && !isValid) ? localeProvider.tr('invalid_period_msg') : null,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: themeColor, width: 2),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    autofocus: true,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(3),
+                    ],
+                    decoration: InputDecoration(
+                      suffixText: localeProvider.tr('days'),
+                      hintText: '7-365',
+                      errorText: (isNotEmpty && !isValid) ? localeProvider.tr('invalid_period_msg') : null,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: themeColor, width: 2),
+                      ),
                     ),
+                    onChanged: (value) {
+                      setState(() {});
+                    },
                   ),
-                  onChanged: (value) {
-                    setState(() {});
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
             actions: [
               TextButton(
@@ -286,7 +281,7 @@ class ActionStatsView extends StatelessWidget {
                 } : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: themeColor,
-                  disabledBackgroundColor: themeColor.withOpacity(0.3),
+                  disabledBackgroundColor: themeColor.withValues(alpha: 0.3),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: isValid ? 2 : 0,
                 ),
@@ -307,14 +302,12 @@ class LineChartPainter extends CustomPainter {
   final List<int> data;
   final Color color;
   final int goal;
-  final bool isDark;
   final String goalLabel;
 
   LineChartPainter({
     required this.data, 
     required this.color, 
     required this.goal,
-    required this.isDark,
     required this.goalLabel,
   });
 
@@ -323,7 +316,7 @@ class LineChartPainter extends CustomPainter {
     final double chartHeight = size.height - _chartBottomPadding - _chartTopPadding;
     final double chartWidth = size.width - _chartLeftPadding - _chartRightPadding;
     
-    final baseTextColor = isDark ? Colors.white : Colors.black;
+    const baseTextColor = Colors.white;
 
     final paint = Paint()
       ..color = color
@@ -335,7 +328,7 @@ class LineChartPainter extends CustomPainter {
       ..shader = ui.Gradient.linear(
         Offset(_chartLeftPadding, _chartTopPadding + chartHeight * 0.2),
         Offset(_chartLeftPadding, _chartTopPadding + chartHeight),
-        [color.withOpacity(0.3), color.withOpacity(0.0)],
+        [color.withValues(alpha: 0.3), color.withValues(alpha: 0.0)],
       )
       ..style = PaintingStyle.fill;
 
@@ -386,13 +379,13 @@ class LineChartPainter extends CustomPainter {
         // Draw Date labels (M.d format)
         if (i % skip == 0 || i == data.length - 1) {
           final date = today.subtract(Duration(days: data.length - 1 - i));
-          final label = "${date.month}.${date.day}";
+          final label = '${date.month}.${date.day}';
           
           final dateLabelPainter = TextPainter(
             text: TextSpan(
               text: label,
               style: TextStyle(
-                color: baseTextColor.withOpacity(0.3),
+                color: baseTextColor.withValues(alpha: 0.3),
                 fontSize: 9,
                 fontWeight: FontWeight.w500,
               ),
@@ -414,7 +407,7 @@ class LineChartPainter extends CustomPainter {
 
     // Draw grid lines and Y-axis labels based on actual values
     final gridPaint = Paint()
-      ..color = baseTextColor.withOpacity(0.05)
+      ..color = baseTextColor.withValues(alpha: 0.05)
       ..strokeWidth = 1;
 
     // Define label values: 0, Max, and a few steps in between
@@ -426,9 +419,9 @@ class LineChartPainter extends CustomPainter {
       
       final yLabelPainter = TextPainter(
         text: TextSpan(
-          text: "${val.round()}",
+          text: val.round().toString(),
           style: TextStyle(
-            color: baseTextColor.withOpacity(0.3),
+            color: baseTextColor.withValues(alpha: 0.3),
             fontSize: 10,
           ),
         ),
@@ -446,7 +439,7 @@ class LineChartPainter extends CustomPainter {
       final goalY = _chartTopPadding + chartHeight - (goal / maxVal * chartHeight);
       if (goalY >= _chartTopPadding && goalY <= _chartTopPadding + chartHeight) {
         final goalPaint = Paint()
-          ..color = color.withOpacity(0.4)
+          ..color = color.withValues(alpha: 0.4)
           ..strokeWidth = 1.5
           ..style = PaintingStyle.stroke;
         
@@ -461,7 +454,7 @@ class LineChartPainter extends CustomPainter {
           text: TextSpan(
             text: goalLabel,
             style: TextStyle(
-              color: color.withOpacity(0.8),
+              color: color.withValues(alpha: 0.8),
               fontSize: 10,
               fontWeight: FontWeight.bold,
             ),

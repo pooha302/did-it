@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:didit/providers/action_provider.dart';
-import 'package:didit/providers/locale_provider.dart';
-import 'package:didit/providers/theme_provider.dart';
+import '../providers/action_provider.dart';
+import '../providers/locale_provider.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/foundation.dart';
 import '../services/analytics_service.dart';
 
@@ -135,7 +133,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
     // Build the tutorial sequence in strict order
     addTarget(
-      id: "active",
+      id: 'active',
       key: _goalActiveKey,
       titleKey: 'tutorial_goal_active_title',
       descKey: 'tutorial_goal_active_desc',
@@ -143,14 +141,14 @@ class _GoalsScreenState extends State<GoalsScreen> {
     );
 
     addTarget(
-      id: "input",
+      id: 'input',
       key: _goalInputKey,
       titleKey: 'tutorial_goal_input_title',
       descKey: 'tutorial_goal_input_desc',
     );
 
     addTarget(
-      id: "type",
+      id: 'type',
       key: _goalTypeKey,
       titleKey: 'tutorial_goal_type_title',
       descKey: 'tutorial_goal_type_desc',
@@ -158,7 +156,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
     );
 
     addTarget(
-      id: "reorder",
+      id: 'reorder',
       key: _goalReorderKey,
       titleKey: 'tutorial_goal_reorder_title',
       descKey: 'tutorial_goal_reorder_desc',
@@ -167,14 +165,14 @@ class _GoalsScreenState extends State<GoalsScreen> {
     );
 
     addTarget(
-      id: "delete",
+      id: 'delete',
       key: _goalDeleteKey,
       titleKey: 'tutorial_goal_delete_title',
       descKey: 'tutorial_goal_delete_desc',
     );
 
     addTarget(
-      id: "help",
+      id: 'help',
       key: _goalHelpKey,
       titleKey: 'tutorial_goal_help_title',
       descKey: 'tutorial_goal_help_desc',
@@ -192,7 +190,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
       skipWidget: const Padding(
         padding: EdgeInsets.only(right: 20, bottom: 10),
         child: Text(
-          "SKIP",
+          'SKIP',
           style: TextStyle(color: Color(0xFFCEFF00), fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
@@ -200,7 +198,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
         if (!isReplay) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('tutorial_goals_shown', true);
-          AnalyticsService.instance.logTutorialComplete('goals_screen');
+          await AnalyticsService.instance.logTutorialComplete('goals_screen');
         }
         setState(() {
           _isTutorialPreparing = false;
@@ -221,11 +219,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
     tutorialCoachMark = tutorial;
   }
 
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ActionProvider>();
-    final isDark = context.isDarkMode;
 
     return PopScope(
       canPop: !_isTutorialPreparing,
@@ -255,7 +251,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
           ),
         ),
         leading: IconButton(
-          icon: Icon(LucideIcons.chevronLeft, color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563)),
+          icon: const Icon(LucideIcons.chevronLeft, color: Color(0xFF9CA3AF)),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
@@ -263,8 +259,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 16, top: 4, bottom: 4),
             child: Material(
-              color: const Color(0xFF9D4EDD).withOpacity(0.15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: BorderSide(color: const Color(0xFF9D4EDD).withOpacity(0.4), width: 1.5)),
+              color: const Color(0xFF9D4EDD).withValues(alpha: 0.15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: BorderSide(color: const Color(0xFF9D4EDD).withValues(alpha: 0.4), width: 1.5)),
               child: InkWell(
                 onTap: () => AddActionSheet.show(context),
                 borderRadius: BorderRadius.circular(14),
@@ -304,7 +300,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 tutorialGoalDeleteKey: index == 0 ? _goalDeleteKey : null,
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     ),
@@ -325,7 +321,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: context.isDarkMode ? const Color(0xFF161618) : Colors.white,
+        backgroundColor: const Color(0xFF161618),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         content: Text(context.read<AppLocaleProvider>().tr('delete_action_confirm')),
         actions: [

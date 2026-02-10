@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/action.dart';
 import '../services/cloud_backup_service.dart';
@@ -10,18 +9,16 @@ import 'package:home_widget/home_widget.dart';
 import 'locale_provider.dart';
 import 'dart:ui' as ui;
 
-
-
 class ActionProvider with ChangeNotifier {
   Map<String, ActionData> _actionStates = {
-    for (var action in ACTIONS)
+    for (var action in baseActions)
       action.id: ActionData(
         isActive: action.id == 'coffee' || action.id == 'water',
         isPositiveGoal: action.id != 'coffee' && action.id != 'snack',
         goal: action.id == 'coffee' ? 3 : (action.id == 'water' ? 8 : 0),
       )
   };
-  List<String> _actionOrder = ACTIONS.map((h) => h.id).toList();
+  List<String> _actionOrder = baseActions.map((h) => h.id).toList();
   List<ActionConfig> _customActions = [];
 
   int _activeActionIndex = 0;
@@ -40,9 +37,9 @@ class ActionProvider with ChangeNotifier {
   bool get showStats => _showStats;
   
   List<ActionConfig> get allActionsByOrder {
-    final all = [...ACTIONS, ..._customActions];
+    final all = [...baseActions, ..._customActions];
     return _actionOrder
-        .map((id) => all.firstWhere((h) => h.id == id, orElse: () => ACTIONS[0]))
+        .map((id) => all.firstWhere((h) => h.id == id, orElse: () => baseActions[0]))
         .toList();
   }
 
@@ -50,7 +47,7 @@ class ActionProvider with ChangeNotifier {
   
   ActionConfig get activeAction {
     final actions = activeActions;
-    if (actions.isEmpty) return ACTIONS[0];
+    if (actions.isEmpty) return baseActions[0];
     final safeIndex = _activeActionIndex >= actions.length ? 0 : _activeActionIndex;
     return actions[safeIndex];
   }
@@ -85,7 +82,6 @@ class ActionProvider with ChangeNotifier {
     }
     if (_activeActionIndex < 0) _activeActionIndex = 0;
   }
-  
 
   void setStatsPeriod(int period) {
     _statsPeriod = period;
@@ -112,8 +108,6 @@ class ActionProvider with ChangeNotifier {
   bool _isResetting = false;
   String _currentDateStr = '';
 
-  // ... (existing getters) ...
-
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
     final savedStates = prefs.getString('action_states_v2');
@@ -122,30 +116,26 @@ class ActionProvider with ChangeNotifier {
     final today = DateTime.now().toIso8601String().split('T')[0];
     final savedDate = prefs.getString('last_saved_date');
 
-    // Initialize current date string
-    _currentDateStr = savedDate ?? today;
-
     final savedDeleted = prefs.getStringList('deleted_predefined_action_ids');
 
-    // Load custom actions
+    _currentDateStr = savedDate ?? today;
+
     if (savedCustom != null) {
       final List<dynamic> decoded = jsonDecode(savedCustom);
       _customActions = decoded.map((item) => ActionConfig.fromJson(item)).toList();
     }
 
-    // Load deleted predefined ids
     if (savedDeleted != null) {
       _deletedPredefinedActionIds = savedDeleted;
     }
 
-    // Load custom order if exists
     if (savedOrder != null) {
       _actionOrder = savedOrder;
     }
 
-    // Initialize last saved date if it's the first run
     if (savedDate == null) {
       await prefs.setString('last_saved_date', today);
+      _currentDateStr = today;
     }
 
     if (savedStates != null) {
@@ -154,16 +144,13 @@ class ActionProvider with ChangeNotifier {
         _actionStates[entry.key] = ActionData.fromJson(entry.value);
       }
 
-      // Initial daily reset check
       await checkAndResetDailyData();
-      
-      // Sync any changes from widget while app was closed
       await syncFromWidget();
     }
     
-    // Ensure all current ACTIONS (not deleted) and custom actions are in the order list
+    // Ensure all current baseActions (not deleted) and custom actions are in the order list
     final allActionIds = [
-      ...ACTIONS.where((h) => !_deletedPredefinedActionIds.contains(h.id)).map((h) => h.id),
+      ...baseActions.where((h) => !_deletedPredefinedActionIds.contains(h.id)).map((h) => h.id),
       ..._customActions.map((h) => h.id)
     ];
     for (var id in allActionIds) {
@@ -211,7 +198,7 @@ class ActionProvider with ChangeNotifier {
             ? DateTime.now().subtract(const Duration(days: 1)).toIso8601String().split('T')[0]
             : _currentDateStr;
         
-        debugPrint("📅 Date changed from $_currentDateStr to $today. Resetting daily data...");
+        debugPrint('📅 Date changed from $_currentDateStr to $today. Resetting daily data...');
         
         for (var state in _actionStates.values) {
           // Save final count of the previous day to history
@@ -262,9 +249,9 @@ class ActionProvider with ChangeNotifier {
 
     for (var actionId in activeActionIds) {
       final action = _actionStates[actionId]!;
-      var baseAction = ACTIONS.firstWhere((a) => a.id == actionId, orElse: () => _customActions.firstWhere((a) => a.id == actionId, orElse: () => ACTIONS.first));
+      var baseAction = baseActions.firstWhere((a) => a.id == actionId, orElse: () => _customActions.firstWhere((a) => a.id == actionId, orElse: () => baseActions.first));
       final translatedTitle = AppLocaleProvider.translations[currentLang]?[baseAction.title] ?? baseAction.title;
-      final hexColor = '#${baseAction.color.value.toRadixString(16).padLeft(8, '0')}';
+      final hexColor = '#${baseAction.color.toARGB32().toRadixString(16).padLeft(8, '0')}';
 
       activeActionsData.add({
         'id': actionId,
@@ -296,9 +283,6 @@ class ActionProvider with ChangeNotifier {
     );
   }
 
-
-
-
   Future<void> _saveData() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = jsonEncode(_actionStates);
@@ -324,7 +308,6 @@ class ActionProvider with ChangeNotifier {
     updateHomeWidget();
   }
 
-
   void addCustomAction(String title, IconData icon, Color color, {bool isPositiveGoal = true}) {
     final id = 'custom_${DateTime.now().millisecondsSinceEpoch}';
     final newAction = ActionConfig(
@@ -332,7 +315,7 @@ class ActionProvider with ChangeNotifier {
       title: title,
       icon: icon,
       color: color,
-      glowColor: color.withOpacity(0.15),
+      glowColor: color.withValues(alpha: 0.15),
       isCustom: true,
     );
     _customActions.add(newAction);
@@ -343,7 +326,7 @@ class ActionProvider with ChangeNotifier {
       actionId: id,
       actionName: title,
       iconCodePoint: icon.codePoint,
-      colorHex: '#${color.value.toRadixString(16).padLeft(8, '0')}',
+      colorHex: '#${color.toARGB32().toRadixString(16).padLeft(8, '0')}',
       isPositiveGoal: isPositiveGoal,
     );
 
@@ -352,11 +335,10 @@ class ActionProvider with ChangeNotifier {
     updateHomeWidget();
   }
 
-
   void deleteAction(String id) {
     if (_actionOrder.length <= 1) return;
 
-    final isPredefined = ACTIONS.any((h) => h.id == id);
+    final isPredefined = baseActions.any((h) => h.id == id);
     if (isPredefined) {
       if (!_deletedPredefinedActionIds.contains(id)) {
         _deletedPredefinedActionIds.add(id);
@@ -366,8 +348,8 @@ class ActionProvider with ChangeNotifier {
     }
     
     // Find name for logging before deletion
-    final all = [...ACTIONS, ..._customActions];
-    final action = all.firstWhere((h) => h.id == id, orElse: () => ACTIONS[0]);
+    final all = [...baseActions, ..._customActions];
+    final action = all.firstWhere((h) => h.id == id, orElse: () => baseActions[0]);
     final actionName = action.title; // Note: this is the translation key or custom title
 
     _actionStates.remove(id);
@@ -388,7 +370,6 @@ class ActionProvider with ChangeNotifier {
     notifyListeners();
     updateHomeWidget();
   }
-
 
   void incrementActionCount(String id) {
     final state = _actionStates[id];
@@ -520,7 +501,7 @@ class ActionProvider with ChangeNotifier {
 
       await CloudBackupService.instance.backup(data);
       
-      AnalyticsService.instance.logCloudBackup(Platform.isAndroid ? 'Android' : 'iOS');
+      await AnalyticsService.instance.logCloudBackup(Platform.isAndroid ? 'Android' : 'iOS');
     } catch (e) {
       debugPrint('Backup Error: $e');
       rethrow;
@@ -532,39 +513,17 @@ class ActionProvider with ChangeNotifier {
       final data = await CloudBackupService.instance.restore();
       if (data == null) return false;
 
-      // Handle custom actions
-      if (data['custom_actions'] != null) {
-        final List<dynamic> decoded = data['custom_actions'];
-        _customActions = decoded.map((item) => ActionConfig.fromJson(item)).toList();
-      }
+      _restoreCustomActions(data);
+      _restoreActionStates(data);
+      _restoreDeletedIds(data);
+      _restoreActionOrder(data);
+      _restoreMetaSettings(data);
 
-      // Handle action states
-      if (data['action_states_v2'] != null) {
-        final Map<String, dynamic> states = data['action_states_v2'];
-        for (var entry in states.entries) {
-          _actionStates[entry.key] = ActionData.fromJson(entry.value);
-        }
-      }
+      await AnalyticsService.instance.logCloudRestore(Platform.isAndroid ? 'Android' : 'iOS');
 
-      // Handle deleted predefined IDs
-      if (data['deleted_predefined_action_ids'] != null) {
-        _deletedPredefinedActionIds = List<String>.from(data['deleted_predefined_action_ids']);
-      }
-
-      // Handle order
-      if (data['action_order'] != null) {
-        _actionOrder = List<String>.from(data['action_order']);
-      }
-
-      // Meta settings
-      _statsPeriod = data['stats_period'] ?? 7;
-      _showGoalsInstruction = data['show_goals_instruction'] ?? true;
-
-      AnalyticsService.instance.logCloudRestore(Platform.isAndroid ? 'Android' : 'iOS');
-
-      _saveData();
+      await _saveData();
       notifyListeners();
-      updateHomeWidget();
+      await updateHomeWidget();
       return true;
 
     } catch (e) {
@@ -573,17 +532,63 @@ class ActionProvider with ChangeNotifier {
     }
   }
 
+  void _restoreCustomActions(Map<String, dynamic> data) {
+    final customActionsData = data['custom_actions'];
+    if (customActionsData is List) {
+      _customActions = customActionsData
+          .map((item) => ActionConfig.fromJson(item as Map<String, dynamic>))
+          .toList();
+    }
+  }
+
+  void _restoreActionStates(Map<String, dynamic> data) {
+    final statesData = data['action_states_v2'];
+    if (statesData is Map<String, dynamic>) {
+      for (var entry in statesData.entries) {
+        _actionStates[entry.key] = ActionData.fromJson(entry.value);
+      }
+    }
+  }
+
+  void _restoreDeletedIds(Map<String, dynamic> data) {
+    _restoreListField(data, 'deleted_predefined_action_ids', (list) {
+      _deletedPredefinedActionIds = list;
+    });
+  }
+
+  void _restoreActionOrder(Map<String, dynamic> data) {
+    _restoreListField(data, 'action_order', (list) {
+      _actionOrder = list;
+    });
+  }
+
+  void _restoreListField(
+    Map<String, dynamic> data,
+    String key,
+    void Function(List<String>) setter,
+  ) {
+    final listData = data[key];
+    if (listData is List) {
+      setter(List<String>.from(listData));
+    }
+  }
+
+  void _restoreMetaSettings(Map<String, dynamic> data) {
+    _statsPeriod = data['stats_period'] as int? ?? 7;
+    _showGoalsInstruction = data['show_goals_instruction'] as bool? ?? true;
+  }
+
   Future<void> resetToDefaults() async {
     // Reset to initial state
     _actionStates = {
-      for (var action in ACTIONS)
+      for (var action in baseActions)
         action.id: ActionData(
           isActive: action.id == 'coffee' || action.id == 'water',
           isPositiveGoal: action.id != 'coffee' && action.id != 'snack',
           goal: action.id == 'coffee' ? 3 : (action.id == 'water' ? 8 : 0),
         )
     };
-    _actionOrder = ACTIONS.map((h) => h.id).toList();
+    _actionOrder = baseActions.map((h) => h.id).toList();
     _customActions = [];
     _activeActionIndex = 0;
     _statsPeriod = 7;
@@ -604,8 +609,6 @@ class ActionProvider with ChangeNotifier {
     // Notify listeners to rebuild UI
     notifyListeners();
   }
-
-
 
   Future<void> syncFromWidget() async {
     const groupId = 'group.com.pooha302.didit';

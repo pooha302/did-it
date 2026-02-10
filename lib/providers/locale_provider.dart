@@ -6,7 +6,7 @@ import 'package:home_widget/home_widget.dart';
 import '../services/analytics_service.dart';
 
 class AppLocaleProvider with ChangeNotifier {
-  Locale? _locale; // Current locale
+  Locale? _locale;
   
   Locale? get locale => _locale;
 
@@ -26,7 +26,7 @@ class AppLocaleProvider with ChangeNotifier {
     }
     
     // Log GA Event
-    AnalyticsService.instance.logLanguageChange(locale?.languageCode ?? 'system');
+    await AnalyticsService.instance.logLanguageChange(locale?.languageCode ?? 'system');
 
     // Save to HomeWidget (AppGroup on iOS) so the widget extension can see the app's language choice
     if (Platform.isIOS) {
@@ -39,8 +39,6 @@ class AppLocaleProvider with ChangeNotifier {
   }
 
   void _updateWidgets() {
-    // We can't easily access ActionProvider here without 'context' 
-    // but we can send a broadcast to HomeWidget to update.
     HomeWidget.updateWidget(
       name: 'DidItWidgetProvider',
       androidName: 'DidItWidgetProvider',
@@ -54,17 +52,16 @@ class AppLocaleProvider with ChangeNotifier {
     if (languageCode != null) {
       _locale = Locale(languageCode);
     } else {
-      _locale = null; // Follow system
+      _locale = null;
     }
     notifyListeners();
   }
 
   void resetToDefaults() async { // Made async
-    _locale = null; // Follow system
+    _locale = null;
     notifyListeners();
-    AnalyticsService.instance.logLanguageChange('system');
+    await AnalyticsService.instance.logLanguageChange('system');
     
-    // Save to HomeWidget (AppGroup on iOS)
     if (Platform.isIOS) {
       await HomeWidget.setAppGroupId('group.com.pooha302.didit');
     }
@@ -79,7 +76,6 @@ class AppLocaleProvider with ChangeNotifier {
       'language': '언어',
       'follow_system': '시스템 기본값',
       'reset': '초기화',
-      // Action Types
       'action_coffee': '커피',
       'action_water': '물 마시기',
       'action_pill': '약',
@@ -132,7 +128,7 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_delete_desc': '안녕은 영원한 헤어짐은 아니겠지요... 왼쪽으로 슥 밀면 삭제! 🗑️',
       'tutorial_goal_help_title': '도움말',
       'tutorial_goal_help_desc': '궁금한 게 생기면 언제든 저를 불러주세요. 여기 대기 중! 🙋‍♂️',
-      'custom': '직접 입력',
+      'custom': '입력',
       'action_placeholder': '오늘은 무엇을 Did it 해볼까요?',
       'confirm': '확인',
       'ok': '확인',
@@ -144,9 +140,6 @@ class AppLocaleProvider with ChangeNotifier {
       'widget_intro_title': '새로운 기능: 위젯!',
       'widget_intro_desc': '이제 홈 화면에 위젯을 추가해서 더 빠르게 행동을 기록해보세요.',
       'got_it': '알겠어요',
-      'edit_history_title': '기록 수정',
-      'save': '저장',
-      'custom': '직접 입력',
       'edit_history_title': '기록 수정',
       'save': '저장',
       'count_label': '횟수',
@@ -210,7 +203,7 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_delete_desc': 'Goodbye isn\'t forever... Swipe left to delete! 🗑️',
       'tutorial_goal_help_title': 'Help',
       'tutorial_goal_help_desc': 'If you have any questions, call me anytime. I\'m waiting here! 🙋‍♂️',
-      'custom': 'Direct Input',
+      'custom': 'Input',
       'action_placeholder': 'What shall we Did it today?',
       'confirm': 'Confirm',
       'ok': 'OK',
@@ -222,8 +215,6 @@ class AppLocaleProvider with ChangeNotifier {
       'widget_intro_title': 'New Feature: Widgets!',
       'widget_intro_desc': 'You can now add widgets to your home screen to track your actions quickly.',
       'got_it': 'Got it',
-      'edit_history_title': 'Edit History',
-      'save': 'Save',
       'edit_history_title': 'Edit History',
       'save': 'Save',
       'count_label': 'Count',
@@ -287,7 +278,7 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_delete_desc': 'さようならは永遠の別れじゃありません…左にスワイプして削除！ 🗑️',
       'tutorial_goal_help_title': 'ヘルプ',
       'tutorial_goal_help_desc': '気になることがあればいつでも呼んでください。ここで待機中！ 🙋‍♂️',
-      'custom': '直接入力',
+      'custom': '入力',
       'action_placeholder': '今日は何を Did it しましょうか？',
       'confirm': '確認',
       'ok': 'OK',
@@ -299,8 +290,6 @@ class AppLocaleProvider with ChangeNotifier {
       'widget_intro_title': '新機能：ウィジェット！',
       'widget_intro_desc': 'ホーム画面にウィジェットを追加して、アクションをすばやく記録できます。',
       'got_it': '了解',
-      'edit_history_title': '記録の編集',
-      'save': '保存',
       'edit_history_title': '記録の編集',
       'save': '保存',
       'count_label': '回数',
@@ -364,7 +353,7 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_delete_desc': '告别不是永远的... 向左滑动删除！ 🗑️',
       'tutorial_goal_help_title': '帮助',
       'tutorial_goal_help_desc': '如果有任何疑问，随时叫我。我在这里等候！ 🙋‍♂️',
-      'custom': '直接输入',
+      'custom': '输入',
       'action_placeholder': '今天要做点什么 Did it 呢？',
       'confirm': '确认',
       'ok': '确定',
@@ -375,8 +364,6 @@ class AppLocaleProvider with ChangeNotifier {
       'widget_intro_title': '新功能：小组件！',
       'widget_intro_desc': '现在可以将小组件添加到主屏幕，更快速地记录行动。',
       'got_it': '知道了',
-      'edit_history_title': '编辑记录',
-      'save': '保存',
       'edit_history_title': '编辑记录',
       'save': '保存',
       'count_label': '次数',
@@ -440,7 +427,7 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_delete_desc': 'El adiós no es para siempre... ¡Desliza a la izquierda para borrar! 🗑️',
       'tutorial_goal_help_title': 'Ayuda',
       'tutorial_goal_help_desc': 'Si tienes dudas, llámame cuando quieras. ¡Aquí te espero! 🙋‍♂️',
-      'custom': 'Entrada directa',
+      'custom': 'Entrada',
       'action_placeholder': '¿Qué vamos a Did it hoy?',
       'confirm': 'Confirmar',
       'ok': 'OK',
@@ -451,8 +438,6 @@ class AppLocaleProvider with ChangeNotifier {
       'widget_intro_title': '¡Nueva función: Widgets!',
       'widget_intro_desc': 'Ahora puedes añadir widgets a tu pantalla de inicio para registrar acciones rápidamente.',
       'got_it': 'Entendido',
-      'edit_history_title': 'Editar historial',
-      'save': 'Guardar',
       'edit_history_title': 'Editar historial',
       'save': 'Guardar',
       'count_label': 'Cantidad',
@@ -516,7 +501,7 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_delete_desc': 'L\'adieu n\'est pas éternel... Glissez vers la gauche pour supprimer ! 🗑️',
       'tutorial_goal_help_title': 'Aide',
       'tutorial_goal_help_desc': 'Si vous avez des questions, appelez-moi. Je vous attends ici ! 🙋‍♂️',
-      'custom': 'Entrée directe',
+      'custom': 'Entrée',
       'action_placeholder': 'Qu\'allons-nous Did it aujourd\'hui ?',
       'confirm': 'Confirmer',
       'ok': 'OK',
@@ -530,6 +515,7 @@ class AppLocaleProvider with ChangeNotifier {
       'edit_history_title': 'Modifier l\'historique',
       'save': 'Enregistrer',
       'count_label': 'Nombre',
+      'edit_history_ad_guide': 'Regardez une publicité pour enregistrer les modifications 📺',
     },
     'de': {
       'settings': 'Einstellungen',
@@ -589,7 +575,7 @@ class AppLocaleProvider with ChangeNotifier {
       'tutorial_goal_delete_desc': 'Abschied ist nicht für immer... Zum Löschen nach links wischen! 🗑️',
       'tutorial_goal_help_title': 'Hilfe',
       'tutorial_goal_help_desc': 'Bei Fragen rufen Sie mich einfach. Ich warte hier! 🙋‍♂️',
-      'custom': 'Direkteingabe',
+      'custom': 'Eingabe',
       'action_placeholder': 'Was wollen wir heute Did it machen?',
       'confirm': 'Bestätigen',
       'ok': 'OK',
@@ -603,146 +589,7 @@ class AppLocaleProvider with ChangeNotifier {
       'edit_history_title': 'Verlauf bearbeiten',
       'save': 'Speichern',
       'count_label': 'Anzahl',
-    },
-    'fr': {
-      'settings': 'Paramètres',
-      'language': 'Langue',
-      'follow_system': 'Par défaut',
-      'reset': 'Réinitialiser',
-      // Action Types
-      'action_coffee': 'Café',
-      'action_water': 'Boire de l\'eau',
-      'action_pill': 'Médicament',
-      'action_exercise': 'Exercice',
-      'action_snack': 'Snacks',
-      'cloud_backup': 'Sauvegarde et restauration',
-      'backup': 'Sauvegarde',
-      'restore': 'Restauration',
-      'backup_success': 'Sauvegarde terminée !',
-      'restore_success': 'Restauration terminée !',
-      'backup_desc': 'Voulez-vous sauvegarder vos précieuses données dans le cloud ? ☁️',
-      'restore_desc': 'Voulez-vous récupérer les données stockées dans le cloud ? (Les données actuelles seront perdues !) 📥',
-      'days': 'jours',
-      'goal_label': 'Objectif',
-      'reset_confirm': 'Mince ! C\'était une erreur ? On l\'efface ? 🧹',
-      'cancel': 'Annuler',
-      'no_data': 'Aucune donnée enregistrée',
-      'tap_to_record': 'Appuyez pour enregistrer !',
-      'goal_reached': 'C\'est fait !',
-      'limit_reached': 'C\'est assez ! ✋',
-      'limit_exceeded': 'Limite dépassée ! 😱',
-      'min': 'Min',
-      'max': 'Max',
-      'avg': 'Moy',
-      'replenish_resets': 'Voir la pub',
-      'resets_exhausted_msg': 'Plus de réinitialisations ! Je vous redonne 3 chances après une pub ? 🎁',
-      'active_action_none': 'C\'est vide ! Remplissez votre journée de belles actions 📝',
-      'nothing_to_reset': 'Rien à effacer ! Vous n\'avez pas encore appuyé ? 🤷‍♂️',
-      'delete_action_confirm': 'Voulez-vous vraiment supprimer cette action ? Tout sera effacé ! 😢',
-      'create': 'Ajouter',
-      'add_action_btn': 'Ajouter',
-      'delete': 'Supprimer',
-      'tutorial_reset_title': 'Réinitialiser',
-      'tutorial_reset_desc': 'Mince, mon doigt a glissé ! Appuyez ici ! (Le premier du jour est gratuit ! 🎁)',
-      'tutorial_action_title': 'Liste d\'actions',
-      'tutorial_action_desc': 'C\'est ici que vous gérez vos actions. Prêt ? ✨',
-      'tutorial_record_title': 'Enregistrer l\'action',
-      'tutorial_record_desc': 'Appuyez doucement pour enregistrer ! Glissez sur le côté pour voir d\'autres actions ! 👆',
-      'tutorial_help_title': 'Aide',
-      'tutorial_help_desc': 'Pas de panique ! Je vous expliquerai à nouveau à tout moment. 💡',
-      'tutorial_goal_input_title': 'Fixer l\'objectif',
-      'tutorial_goal_input_desc': 'Noter un objectif facilite le suivi ! Mettez 0 pour enregistrer sans objectif. 🎯',
-      'tutorial_goal_type_title': 'Type d\'action',
-      'tutorial_goal_type_desc': 'Est-ce positif pour vous ou négatif ? Choisissez ce qui correspond ! 👍👎',
-      'tutorial_goal_active_title': 'Activer l\'action',
-      'tutorial_goal_active_desc': 'Décidez si vous voulez l\'afficher sur l\'écran principal avec l\'interrupteur ! 🔘',
-      'tutorial_goal_reorder_title': 'Réorganiser',
-      'tutorial_goal_reorder_desc': 'Maintenez enfoncé pour monter ou descendre ! Rangez-les selon vos priorités. ↕️',
-      'tutorial_goal_delete_title': 'Supprimer l\'action',
-      'tutorial_goal_delete_desc': 'L\'adieu n\'est pas éternel... Glissez vers la gauche pour supprimer ! 🗑️',
-      'tutorial_goal_help_title': 'Aide',
-      'tutorial_goal_help_desc': 'Si vous avez des questions, appelez-moi. Je vous attends ici ! 🙋‍♂️',
-      'custom': 'Entrée directe',
-      'action_placeholder': 'Qu\'allons-nous Did it aujourd\'hui ?',
-      'confirm': 'Confirmer',
-      'ok': 'OK',
-      'invalid_period_msg': 'Seulement de 7 à 365 jours ! 📅',
-      'just_now': 'À l\'instant',
-      'min_ago': 'm auparavant',
-      'hour_ago': 'h auparavant',
-      'widget_intro_title': 'Nouvelle fonctionnalité : Widgets !',
-      'widget_intro_desc': 'Vous pouvez maintenant ajouter des widgets à votre écran d\'accueil pour enregistrer vos actions rapidement.',
-      'got_it': 'Compris',
-    },
-    'de': {
-      'settings': 'Einstellungen',
-      'language': 'Sprache',
-      'follow_system': 'Standardsystem',
-      'reset': 'Zurücksetzen',
-      // Action Types
-      'action_coffee': 'Kaffee',
-      'action_water': 'Wasser trinken',
-      'action_pill': 'Medizin',
-      'action_exercise': 'Sport',
-      'action_snack': 'Snacks',
-      'cloud_backup': 'Backup & Wiederherstellung',
-      'backup': 'Datensicherung',
-      'restore': 'Wiederherstellung',
-      'backup_success': 'Datensicherung abgeschlossen!',
-      'restore_success': 'Wiederherstellung abgeschlossen!',
-      'backup_desc': 'Sollen wir Ihre wertvollen Daten sicher in der Cloud speichern? ☁️',
-      'restore_desc': 'Möchten Sie die in der Cloud gespeicherten Daten wiederherstellen? (Aktuelle Daten gehen verloren!) 📥',
-      'days': 'Tage',
-      'goal_label': 'Ziel',
-      'reset_confirm': 'Hoppla, war das ein Fehler? Sollen wir es löschen? 🧹',
-      'cancel': 'Abbrechen',
-      'no_data': 'Keine Daten aufgezeichnet',
-      'tap_to_record': 'Zum Aufzeichnen tippen!',
-      'goal_reached': 'Geschafft!',
-      'limit_reached': 'Genau richtig! ✋',
-      'limit_exceeded': 'Zu viel! 😱',
-      'min': 'Min',
-      'max': 'Max',
-      'avg': 'Durchs.',
-      'replenish_resets': 'Werbung ansehen',
-      'resets_exhausted_msg': 'Keine Resets mehr! Sollen wir Ihnen nach einer Anzeige 3 weitere Chancen geben? 🎁',
-      'active_action_none': 'Es ist leer! Füllen Sie Ihren Tag mit wunderbaren Aktionen 📝',
-      'nothing_to_reset': 'Nichts zum Löschen! Haben Sie noch nicht getippt? 🤷‍♂️',
-      'delete_action_confirm': 'Möchten Sie sich wirklich von dieser Aktion verabschieden? Alle Aufzeichnungen werden gelöscht! 😢',
-      'create': 'Hinzufügen',
-      'add_action_btn': 'Hinzufügen',
-      'delete': 'Löschen',
-      'tutorial_reset_title': 'Zurücksetzen',
-      'tutorial_reset_desc': 'Hoppla, mein Finger ist ausgerutscht! Tippen Sie hier! (Das erste Mal am Tag ist kostenlos! 🎁)',
-      'tutorial_action_title': 'Aktionsliste',
-      'tutorial_action_desc': 'Hier verwalten Sie Ihre Aktionen. Bereit? ✨',
-      'tutorial_record_title': 'Aktion aufzeichnen',
-      'tutorial_record_desc': 'Sanft tippen zum Aufzeichnen! Seitlich wischen für andere Aktionen! 👆',
-      'tutorial_help_title': 'Hilfe',
-      'tutorial_help_desc': 'Keine Panik! Ich erkläre es Ihnen jederzeit gerne wieder. 💡',
-      'tutorial_goal_input_title': 'Ziel setzen',
-      'tutorial_goal_input_desc': 'Ein Ziel macht die Verfolgung des Fortschritts sehr einfach! Bei 0 wird ohne Ziel aufgezeichnet. 🎯',
-      'tutorial_goal_type_title': 'Aktionstyp',
-      'tutorial_goal_type_desc': 'Ist das positiv für Sie oder negativ? Wählen Sie das Passende! 👍👎',
-      'tutorial_goal_active_title': 'Aktion aktivieren',
-      'tutorial_goal_active_desc': 'Entscheiden Sie mit dem Schalter, ob sie auf dem Hauptbildschirm angezeigt wird! 🔘',
-      'tutorial_goal_reorder_title': 'Neu ordnen',
-      'tutorial_goal_reorder_desc': 'Gedrückt halten zum Verschieben! Ordnen Sie sie so, wie es für Sie wichtig ist. ↕️',
-      'tutorial_goal_delete_title': 'Aktion löschen',
-      'tutorial_goal_delete_desc': 'Abschied ist nicht für immer... Zum Löschen nach links wischen! 🗑️',
-      'tutorial_goal_help_title': 'Hilfe',
-      'tutorial_goal_help_desc': 'Bei Fragen rufen Sie mich einfach. Ich warte hier! 🙋‍♂️',
-      'custom': 'Direkteingabe',
-      'action_placeholder': 'Was wollen wir heute Did it machen?',
-      'confirm': 'Bestätigen',
-      'ok': 'OK',
-      'invalid_period_msg': 'Nur 7 bis 365 Tage möglich! 📅',
-      'just_now': 'Gerade eben',
-      'min_ago': 'Min. her',
-      'hour_ago': 'Std. her',
-      'widget_intro_title': 'Neue Funktion: Widgets!',
-      'widget_intro_desc': 'Sie können jetzt Widgets zum Startbildschirm hinzufügen, um Aktionen schneller aufzuzeichnen.',
-      'got_it': 'Verstanden',
+      'edit_history_ad_guide': 'Werbung ansehen, um Änderungen zu speichern �',
     },
   };
 

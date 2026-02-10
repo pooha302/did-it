@@ -1,9 +1,6 @@
-import "package:package_info_plus/package_info_plus.dart";
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import '../providers/locale_provider.dart';
-import '../providers/theme_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,7 +12,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
   bool _isVisible = false;
 
   @override
@@ -31,13 +27,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-      ),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
       ),
     );
 
@@ -59,17 +48,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final isDark = context.isDarkMode;
-    
-    // Return empty black screen until visible to prevent "double logo" flash
     if (!_isVisible) {
-      return Scaffold(
-        backgroundColor: isDark ? Colors.black : Colors.white,
+      return const Scaffold(
+        backgroundColor: Colors.black,
       );
     }
     
     return Scaffold(
-      backgroundColor: isDark ? Colors.black : Colors.white,
+      backgroundColor: Colors.black,
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
@@ -77,8 +63,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(flex: 3),
-              
-              // Logo Reveal Animation
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: Center(
@@ -87,30 +71,27 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     height: 220,
                     child: Stack(
                       children: [
-                        // Layer 1: Empty State (Background)
                         Container(
                           width: 220,
                           height: 220,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isDark ? Colors.grey[900] : Colors.grey[200],
+                            color: Colors.grey[900],
                           ),
                           child: Center(
                             child: Text(
                               'Did\nit',
                               textAlign: TextAlign.center,
                               style: GoogleFonts.outfit(
-                                fontSize: 80, // Larger size
+                                fontSize: 80,
                                 fontWeight: FontWeight.w900,
-                                color: isDark ? Colors.grey[700] : Colors.grey[400],
-                                letterSpacing: -3.0, // Tighter letter spacing for larger text
+                                color: Colors.grey[700],
+                                letterSpacing: -3.0,
                                 height: 0.85,
                               ),
                             ),
                           ),
                         ),
-                        
-                        // Layer 2: Filled State (Foreground) - Clipped from bottom
                         ClipRect(
                           clipper: BottomFillClipper(_controller.value),
                           child: Container(
@@ -118,16 +99,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             height: 220,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFFCEFF00), // Electric Lime to match logo
+                              color: Color(0xFFCEFF00),
                             ),
                             child: Center(
                               child: Text(
                                 'Did\nit',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.outfit(
-                                  fontSize: 80, // Larger size
+                                  fontSize: 80,
                                   fontWeight: FontWeight.w900,
-                                  color: Colors.black, // Always black on Lime
+                                  color: Colors.black,
                                   letterSpacing: -3.0,
                                   height: 0.85,
                                 ),
@@ -140,10 +121,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                 ),
               ),
-              
               const SizedBox(height: 24),
-              
-              // "Tapped it." Text below
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: Text(
@@ -152,15 +130,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    color: Colors.grey[400],
                     letterSpacing: 0.5,
                   ),
                 ),
               ),
-              
               const Spacer(flex: 3),
-              
-              // Version Text
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: FutureBuilder<PackageInfo>(
@@ -172,14 +147,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       style: GoogleFonts.outfit(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: isDark ? Colors.grey[800] : Colors.grey[400],
+                        color: Colors.grey[800],
                         letterSpacing: 1.0,
                       ),
                     );
                   },
                 ),
               ),
-              
               const SizedBox(height: 32),
             ],
           );

@@ -26,19 +26,18 @@ class _WidgetIntroDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lp = context.watch<AppLocaleProvider>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+      backgroundColor: const Color(0xFF1A1A1A),
       title: Column(
         children: [
           const Icon(Icons.widgets_rounded, size: 48, color: Colors.blueAccent),
           const SizedBox(height: 16),
           Text(
             lp.tr('widget_intro_title'),
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black, 
+            style: const TextStyle(
+              color: Colors.white, 
               fontWeight: FontWeight.bold
             ),
             textAlign: TextAlign.center,
@@ -47,7 +46,7 @@ class _WidgetIntroDialog extends StatelessWidget {
       ),
       content: Text(
         lp.tr('widget_intro_desc'),
-        style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+        style: const TextStyle(color: Colors.white70),
         textAlign: TextAlign.center,
       ),
       actions: [

@@ -1,11 +1,9 @@
-import "package:package_info_plus/package_info_plus.dart";
-import 'package:didit/providers/locale_provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../providers/theme_provider.dart';
+import '../providers/locale_provider.dart';
 import '../providers/action_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -13,17 +11,15 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = context.watch<ThemeProvider>();
     final localeProvider = context.watch<AppLocaleProvider>();
-    final isDark = context.isDarkMode;
     
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           localeProvider.tr('settings'),
-          style: TextStyle(
-            color: isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827),
+          style: const TextStyle(
+            color: Color(0xFFF3F4F6),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -31,7 +27,7 @@ class SettingsScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(LucideIcons.chevronLeft, color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563)),
+          icon: const Icon(LucideIcons.chevronLeft, color: Color(0xFF9CA3AF)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -43,7 +39,6 @@ class SettingsScreen extends StatelessWidget {
             title: localeProvider.tr('language'),
             value: _getLanguageName(localeProvider.locale, localeProvider),
             icon: LucideIcons.globe,
-            isDark: isDark,
             onTap: () => _showLanguagePicker(context),
           ),
           const SizedBox(height: 12),
@@ -52,7 +47,6 @@ class SettingsScreen extends StatelessWidget {
             title: localeProvider.tr('cloud_backup'),
             value: '',
             icon: LucideIcons.cloud,
-            isDark: isDark,
             onTap: () => _showCloudBackupPicker(context),
           ),
           // Development-only: Data Reset
@@ -63,7 +57,6 @@ class SettingsScreen extends StatelessWidget {
               title: '[DEV] Reset All Data',
               value: '',
               icon: LucideIcons.trash2,
-              isDark: isDark,
               onTap: () => _showResetConfirmDialog(context),
             ),
           ],
@@ -73,7 +66,7 @@ class SettingsScreen extends StatelessWidget {
               Text(
                 'Did it',
                 style: GoogleFonts.outfit(
-                  color: const Color(0xFFCEFF00).withOpacity(0.8), // More vibrant Lime
+                  color: const Color(0xFFCEFF00).withValues(alpha: 0.8), // More vibrant Lime
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -1,
@@ -86,7 +79,7 @@ class SettingsScreen extends StatelessWidget {
                   return Text(
                     'v$version',
                     style: TextStyle(
-                      color: const Color(0xFFCEFF00).withOpacity(0.6), // Lime color with opacity
+                      color: const Color(0xFFCEFF00).withValues(alpha: 0.6), // Lime color with opacity
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -100,7 +93,6 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
-
 
   String _getLanguageName(Locale? locale, AppLocaleProvider lp) {
     if (locale == null) return lp.tr('follow_system');
@@ -122,16 +114,16 @@ class SettingsScreen extends StatelessWidget {
     required String title,
     required String value,
     required IconData icon,
-    required bool isDark,
+    // Removed unused 'isDark' parameter
     required VoidCallback onTap,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
         ),
       ),
       child: ListTile(
@@ -140,7 +132,7 @@ class SettingsScreen extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFCEFF00).withOpacity(0.8), // Vibrant Lime BG
+            color: const Color(0xFFCEFF00).withValues(alpha: 0.8), // Vibrant Lime BG
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -151,8 +143,8 @@ class SettingsScreen extends StatelessWidget {
         ),
         title: Text(
           title,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
+          style: const TextStyle(
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 16,
           ),
@@ -163,8 +155,8 @@ class SettingsScreen extends StatelessWidget {
             Flexible(
               child: Text(
                 value,
-                style: TextStyle(
-                  color: isDark ? Colors.white54 : Colors.black45,
+                style: const TextStyle(
+                  color: Colors.white54,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -173,14 +165,13 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(LucideIcons.chevronRight, size: 16, color: isDark ? Colors.white30 : Colors.black.withOpacity(0.3)),
+            const Icon(LucideIcons.chevronRight, size: 16, color: Colors.white30),
           ],
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
-
 
   void _showLanguagePicker(BuildContext context) {
     showModalBottomSheet(
@@ -189,65 +180,64 @@ class SettingsScreen extends StatelessWidget {
       isScrollControlled: true,
       builder: (context) {
         final lp = context.watch<AppLocaleProvider>();
-        final isDark = context.isDarkMode;
 
         return Container(
           height: MediaQuery.of(context).size.height * 0.6,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1F2937) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: const BoxDecoration(
+            color: Color(0xFF1F2937),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: const EdgeInsets.symmetric(vertical: 24),
           child: Column(
             children: [
               Text(
                 lp.tr('language'),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 16),
               Expanded(
                 child: ListView(
                   children: [
-                    _buildPickerOption(context, lp.tr('follow_system'), lp.locale == null, isDark, () {
+                    _buildPickerOption(context, lp.tr('follow_system'), lp.locale == null, () {
                       context.read<AppLocaleProvider>().setLocale(null);
                       context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
-                    _buildPickerOption(context, 'English', lp.locale?.languageCode == 'en', isDark, () {
+                    _buildPickerOption(context, 'English', lp.locale?.languageCode == 'en', () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('en'));
                       context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
-                    _buildPickerOption(context, '简体中文', lp.locale?.languageCode == 'zh', isDark, () {
+                    _buildPickerOption(context, '简体中文', lp.locale?.languageCode == 'zh', () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('zh'));
                       context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
-                    _buildPickerOption(context, 'Español', lp.locale?.languageCode == 'es', isDark, () {
+                    _buildPickerOption(context, 'Español', lp.locale?.languageCode == 'es', () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('es'));
                       context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
-                    _buildPickerOption(context, '日本語', lp.locale?.languageCode == 'ja', isDark, () {
+                    _buildPickerOption(context, '日本語', lp.locale?.languageCode == 'ja', () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('ja'));
                       context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
-                    _buildPickerOption(context, '한국어', lp.locale?.languageCode == 'ko', isDark, () {
+                    _buildPickerOption(context, '한국어', lp.locale?.languageCode == 'ko', () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('ko'));
                       context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
-                    _buildPickerOption(context, 'Français', lp.locale?.languageCode == 'fr', isDark, () {
+                    _buildPickerOption(context, 'Français', lp.locale?.languageCode == 'fr', () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('fr'));
                       context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
                     }),
-                    _buildPickerOption(context, 'Deutsch', lp.locale?.languageCode == 'de', isDark, () {
+                    _buildPickerOption(context, 'Deutsch', lp.locale?.languageCode == 'de', () {
                       context.read<AppLocaleProvider>().setLocale(const Locale('de'));
                       context.read<ActionProvider>().updateHomeWidget();
                       Navigator.pop(context);
@@ -269,13 +259,12 @@ class SettingsScreen extends StatelessWidget {
       isScrollControlled: true,
       builder: (sheetContext) {
         final lp = sheetContext.watch<AppLocaleProvider>();
-        final isDark = Theme.of(sheetContext).brightness == Brightness.dark;
         final provider = sheetContext.read<ActionProvider>();
 
         return Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1F2937) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: const BoxDecoration(
+            color: Color(0xFF1F2937),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: const EdgeInsets.symmetric(vertical: 24),
           child: SingleChildScrollView(
@@ -284,10 +273,10 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 Text(
                   lp.tr('cloud_backup'),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black,
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -295,7 +284,6 @@ class SettingsScreen extends StatelessWidget {
                   sheetContext,
                   title: lp.tr('backup'),
                   icon: LucideIcons.upload,
-                  isDark: isDark,
                   onTap: () async {
                     final confirmed = await _showConfirmDialog(
                       outerContext,
@@ -304,18 +292,19 @@ class SettingsScreen extends StatelessWidget {
                     );
                     if (!confirmed) return;
 
-                    Navigator.pop(sheetContext); // Close bottom sheet
-                    _showLoadingDialog(outerContext, lp.tr('backup'));
+                    if (!sheetContext.mounted) return;
+                    Navigator.pop(sheetContext);
+                    if (outerContext.mounted) _showLoadingDialog(outerContext, lp.tr('backup'));
                     try {
                       await provider.backupToCloud();
                       if (outerContext.mounted) {
-                        Navigator.of(outerContext).pop(); // Close loading dialog
-                        _showToast(outerContext, lp.tr('backup_success'), isDark);
+                        Navigator.of(outerContext).pop();
+                        _showToast(outerContext, lp.tr('backup_success'));
                       }
                     } catch (e) {
                       if (outerContext.mounted) {
-                        Navigator.of(outerContext).pop(); // Close loading dialog
-                        _showToast(outerContext, 'Backup Failed: $e', isDark, isError: true);
+                        Navigator.of(outerContext).pop();
+                        _showToast(outerContext, 'Backup Failed: $e', isError: true);
                       }
                     }
                   },
@@ -325,7 +314,6 @@ class SettingsScreen extends StatelessWidget {
                   sheetContext,
                   title: lp.tr('restore'),
                   icon: LucideIcons.download,
-                  isDark: isDark,
                   onTap: () async {
                     final confirmed = await _showConfirmDialog(
                       outerContext,
@@ -334,22 +322,23 @@ class SettingsScreen extends StatelessWidget {
                     );
                     if (!confirmed) return;
 
-                    Navigator.pop(sheetContext); // Close bottom sheet
-                    _showLoadingDialog(outerContext, lp.tr('restore'));
+                    if (!sheetContext.mounted) return;
+                    Navigator.pop(sheetContext);
+                    if (outerContext.mounted) _showLoadingDialog(outerContext, lp.tr('restore'));
                     try {
                       final success = await provider.restoreFromCloud();
                       if (outerContext.mounted) {
-                        Navigator.of(outerContext).pop(); // Close loading dialog
+                        Navigator.of(outerContext).pop();
                         if (success) {
-                          _showToast(outerContext, lp.tr('restore_success'), isDark);
+                          _showToast(outerContext, lp.tr('restore_success'));
                         } else {
-                          _showToast(outerContext, 'No backup found in cloud', isDark, isError: true);
+                          _showToast(outerContext, 'No backup found in cloud', isError: true);
                         }
                       }
                     } catch (e) {
                       if (outerContext.mounted) {
-                        Navigator.of(outerContext).pop(); // Close loading dialog
-                        _showToast(outerContext, 'Restore Failed: $e', isDark, isError: true);
+                        Navigator.of(outerContext).pop();
+                        _showToast(outerContext, 'Restore Failed: $e', isError: true);
                       }
                     }
                   },
@@ -367,7 +356,6 @@ class SettingsScreen extends StatelessWidget {
     BuildContext context, {
     required String title,
     required IconData icon,
-    required bool isDark,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -376,16 +364,16 @@ class SettingsScreen extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blueAccent.withOpacity(0.1),
+                color: Colors.blueAccent.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: Colors.blueAccent, size: 24),
@@ -397,8 +385,8 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -406,7 +394,7 @@ class SettingsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(LucideIcons.chevronRight, size: 20, color: isDark ? Colors.white24 : Colors.black26),
+            const Icon(LucideIcons.chevronRight, size: 20, color: Colors.white24),
           ],
         ),
       ),
@@ -414,7 +402,6 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showLoadingDialog(BuildContext context, String text) {
-    final isDark = context.isDarkMode;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -423,11 +410,11 @@ class SettingsScreen extends StatelessWidget {
           width: 150,
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+            color: const Color(0xFF1F2937),
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -450,7 +437,7 @@ class SettingsScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white.withOpacity(0.9) : Colors.black87,
+                  color: Colors.white.withValues(alpha: 0.9),
                   decoration: TextDecoration.none,
                 ),
               ),
@@ -461,7 +448,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showToast(BuildContext context, String message, bool isDark, {bool isError = false}) {
+  void _showToast(BuildContext context, String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -476,13 +463,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPickerOption(BuildContext context, String title, bool isSelected, bool isDark, VoidCallback onTap) {
+  Widget _buildPickerOption(BuildContext context, String title, bool isSelected, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? (isDark ? Colors.blue.withOpacity(0.1) : Colors.blue.withOpacity(0.05)) : Colors.transparent,
+          color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -492,7 +479,7 @@ class SettingsScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? Colors.blueAccent : (isDark ? Colors.white70 : Colors.black87),
+                color: isSelected ? Colors.blueAccent : Colors.white70,
               ),
             ),
             if (isSelected)
@@ -505,24 +492,23 @@ class SettingsScreen extends StatelessWidget {
 
   Future<bool> _showConfirmDialog(BuildContext context, {required String title, required String message}) async {
     final lp = context.read<AppLocaleProvider>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+        backgroundColor: const Color(0xFF1F2937),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           title, 
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black, 
+          style: const TextStyle(
+            color: Colors.white, 
             fontWeight: FontWeight.bold
           )
         ),
         content: Text(
           message, 
-          style: TextStyle(
-            color: isDark ? Colors.white70 : Colors.black87,
+          style: const TextStyle(
+            color: Colors.white70,
             height: 1.5,
           )
         ),
@@ -531,7 +517,7 @@ class SettingsScreen extends StatelessWidget {
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               lp.tr('cancel'), 
-              style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)
+              style: const TextStyle(color: Colors.white54)
             ),
           ),
           TextButton(
@@ -547,28 +533,27 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showResetConfirmDialog(BuildContext context) {
-    final isDark = context.isDarkMode;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+        backgroundColor: const Color(0xFF1F2937),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
         actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-        content: Text(
+        content: const Text(
           'This will delete all actions, counts, and settings. This action cannot be undone.\n\nAre you sure you want to continue?',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: isDark ? Colors.white70 : Colors.black87,
+            color: Colors.white70,
             fontSize: 14,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
+            child: const Text(
               'Cancel',
-              style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
+              style: TextStyle(color: Colors.white54),
             ),
           ),
           TextButton(
@@ -587,34 +572,27 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _resetAllData(BuildContext context) async {
-    final isDark = context.isDarkMode;
     
     // Show loading
     _showLoadingDialog(context, 'Resetting...');
     
-    // Reset all providers
     final actionProvider = context.read<ActionProvider>();
-    final themeProvider = context.read<ThemeProvider>();
     final localeProvider = context.read<AppLocaleProvider>();
     
     // Reset each provider to defaults
     await actionProvider.resetToDefaults();
-    themeProvider.resetToDefaults();
     localeProvider.resetToDefaults();
     
     // Small delay for visual feedback
     await Future.delayed(const Duration(milliseconds: 500));
     
     if (context.mounted) {
-      Navigator.of(context).pop(); // Close loading dialog
+      Navigator.of(context).pop();
       
       // Show success message
-      _showToast(context, 'All data has been reset', isDark);
+      _showToast(context, 'All data has been reset');
       
-      // Pop back to main screen with result to trigger tutorial
       Navigator.of(context).pop('data_reset');
-      
-      // The UI will automatically update because providers notified listeners
     }
   }
 }

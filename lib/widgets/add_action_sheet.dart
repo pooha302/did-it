@@ -4,7 +4,6 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../providers/action_provider.dart';
 import '../providers/locale_provider.dart';
-import '../providers/theme_provider.dart';
 
 class AddActionSheet extends StatefulWidget {
   const AddActionSheet({super.key});
@@ -67,12 +66,11 @@ class _AddActionSheetState extends State<AddActionSheet> {
   Widget build(BuildContext context) {
     final lp = context.watch<AppLocaleProvider>();
     final provider = context.read<ActionProvider>();
-    final isDark = context.isDarkMode;
 
     return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF161618) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      decoration: const BoxDecoration(
+        color: Color(0xFF161618),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).viewInsets.bottom + 16),
       child: SingleChildScrollView(
@@ -85,7 +83,7 @@ class _AddActionSheetState extends State<AddActionSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white24 : Colors.black12,
+                  color: Colors.white24,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -98,15 +96,15 @@ class _AddActionSheetState extends State<AddActionSheet> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               decoration: InputDecoration(
                 hintText: lp.tr('action_placeholder'),
-                hintStyle: TextStyle(color: isDark ? Colors.white24 : Colors.black26),
+                hintStyle: const TextStyle(color: Colors.white24),
                 filled: true,
-                fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
             ),
             const SizedBox(height: 12),
-            Divider(color: isDark ? Colors.white10 : Colors.black12),
+            const Divider(color: Colors.white10),
             const SizedBox(height: 12),
 
             SizedBox(
@@ -124,18 +122,18 @@ class _AddActionSheetState extends State<AddActionSheet> {
                       height: 32,
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: isSelected ? selectedColor.withOpacity(0.2) : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+                        color: isSelected ? selectedColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(8),
-                        border: isSelected ? Border.all(color: selectedColor.withOpacity(0.5), width: 1.5) : null,
+                        border: isSelected ? Border.all(color: selectedColor.withValues(alpha: 0.5), width: 1.5) : null,
                       ),
-                      child: Icon(icon, color: isSelected ? selectedColor : (isDark ? Colors.white70 : Colors.black54), size: 18),
+                      child: Icon(icon, color: isSelected ? selectedColor : Colors.white70, size: 18),
                     ),
                   );
                 }).toList(),
               ),
             ),
             const SizedBox(height: 12),
-            Divider(color: isDark ? Colors.white10 : Colors.black12),
+            const Divider(color: Colors.white10),
             const SizedBox(height: 12),
 
             SizedBox(
@@ -153,8 +151,8 @@ class _AddActionSheetState extends State<AddActionSheet> {
                       decoration: BoxDecoration(
                         color: color,
                         shape: BoxShape.circle,
-                        border: isSelected ? Border.all(color: isDark ? Colors.white : Colors.black87, width: 2.5) : null,
-                        boxShadow: isSelected ? [BoxShadow(color: color.withOpacity(0.4), blurRadius: 10)] : null,
+                        border: isSelected ? Border.all(color: Colors.white, width: 2.5) : null,
+                        boxShadow: isSelected ? [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 10)] : null,
                       ),
                     ),
                   );
@@ -162,13 +160,13 @@ class _AddActionSheetState extends State<AddActionSheet> {
               ),
             ),
             const SizedBox(height: 12),
-            Divider(color: isDark ? Colors.white10 : Colors.black12),
+            const Divider(color: Colors.white10),
             const SizedBox(height: 12),
 
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: isDark ? Colors.black.withOpacity(0.3) : const Color(0xFFD1D5DB).withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -213,18 +211,17 @@ class _AddActionSheetState extends State<AddActionSheet> {
   }
 
   Widget _modeButton(IconData icon, bool isSelected, VoidCallback onTap, Color activeColor) {
-    final isDark = context.isDarkMode;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? (isDark ? activeColor.withOpacity(0.2) : activeColor.withOpacity(0.1)) : Colors.transparent,
+          color: isSelected ? activeColor.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: isSelected ? activeColor.withOpacity(0.5) : (isDark ? Colors.white10 : Colors.black12)),
+          border: Border.all(color: isSelected ? activeColor.withValues(alpha: 0.5) : Colors.white10),
         ),
-        child: Icon(icon, size: 18, color: isSelected ? activeColor : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563))),
+        child: Icon(icon, size: 18, color: isSelected ? activeColor : const Color(0xFF9CA3AF)),
       ),
     );
   }

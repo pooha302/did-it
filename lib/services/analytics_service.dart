@@ -1,6 +1,5 @@
-import 'package:didit/main.dart';
+import '../main.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:flutter/foundation.dart';
 
 class AnalyticsService {
   static final AnalyticsService instance = AnalyticsService._();
@@ -8,7 +7,15 @@ class AnalyticsService {
 
   FirebaseAnalytics? get _analytics => isFirebaseInitialized ? FirebaseAnalytics.instance : null;
 
-  // Mapping of common codepoints to names for better GA readable reports
+  Future<void> _logEvent(String name, [Map<String, Object>? parameters]) async {
+    try {
+      final analytics = _analytics;
+      if (analytics == null) return;
+      await analytics.setAnalyticsCollectionEnabled(true);
+      await analytics.logEvent(name: name, parameters: parameters);
+    } catch (_) {}
+  }
+
   static const Map<int, String> _iconNameMap = {
     0xe98a: 'coffee',
     0xebc1: 'glass_water',
@@ -23,7 +30,7 @@ class AnalyticsService {
     0xeaa4: 'laptop',
     0xe962: 'brain',
     0xeb26: 'pill',
-    0xe940: 'bed',
+    0xea40: 'bed',
     0xe93a: 'bath',
     0xea94: 'home',
     0xeb64: 'shopping_cart',
@@ -36,22 +43,13 @@ class AnalyticsService {
     0xe98d: 'clock',
   };
 
-  // 1. Reset Action
   Future<void> logResetAction(String actionId, String actionName) async {
-    try {
-      if (_analytics == null) return;
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logEvent(
-        name: 'action_reset',
-        parameters: {
-          'action_id': actionId,
-          'action_name': actionName,
-        },
-      );
-    } catch (_) {}
+    await _logEvent('action_reset', {
+      'action_id': actionId,
+      'action_name': actionName,
+    });
   }
 
-  // 2 & 4. Add Action with full info
   Future<void> logAddAction({
     required String actionId,
     required String actionName,
@@ -59,145 +57,58 @@ class AnalyticsService {
     required String colorHex,
     required bool isPositiveGoal,
   }) async {
-    try {
-      if (_analytics == null) return;
-      final iconName = _iconNameMap[iconCodePoint] ?? 'unknown_$iconCodePoint';
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logEvent(
-        name: 'action_add',
-        parameters: {
-          'action_id': actionId,
-          'action_name': actionName,
-          'icon': iconName,
-          'color': colorHex,
-          'goal_type': isPositiveGoal ? 'positive' : 'negative',
-        },
-      );
-    } catch (_) {}
+    final iconName = _iconNameMap[iconCodePoint] ?? 'unknown_$iconCodePoint';
+    await _logEvent('action_add', {
+      'action_id': actionId,
+      'action_name': actionName,
+      'icon': iconName,
+      'color': colorHex,
+      'goal_type': isPositiveGoal ? 'positive' : 'negative',
+    });
   }
 
-  // 3 & 5. Delete Action with name
   Future<void> logDeleteAction(String actionId, String actionName) async {
-    try {
-      if (_analytics == null) return;
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logEvent(
-        name: 'action_delete',
-        parameters: {
-          'action_id': actionId,
-          'action_name': actionName,
-        },
-      );
-    } catch (_) {}
+    await _logEvent('action_delete', {
+      'action_id': actionId,
+      'action_name': actionName,
+    });
   }
 
-  // 6. Cloud Backup
   Future<void> logCloudBackup(String platform) async {
-    try {
-      if (_analytics == null) return;
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logEvent(
-        name: 'cloud_backup',
-        parameters: {
-          'platform': platform,
-        },
-      );
-    } catch (_) {}
+    await _logEvent('cloud_backup', {'platform': platform});
   }
 
-  // 7. Goal Type Change (Thumb up/down)
   Future<void> logGoalTypeChange(String actionId, bool isPositive) async {
-    try {
-      if (_analytics == null) return;
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logEvent(
-        name: 'action_goal_type_change',
-        parameters: {
-          'action_id': actionId,
-          'goal_type': isPositive ? 'positive' : 'negative',
-        },
-      );
-    } catch (_) {}
+    await _logEvent('action_goal_type_change', {
+      'action_id': actionId,
+      'goal_type': isPositive ? 'positive' : 'negative',
+    });
   }
 
-  // 8. Action Toggle (Active/Inactive)
   Future<void> logActionToggle(String actionId, bool isActive) async {
-    try {
-      if (_analytics == null) return;
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logEvent(
-        name: 'action_toggle_status',
-        parameters: {
-          'action_id': actionId,
-          'is_active': isActive ? 1 : 0,
-        },
-      );
-    } catch (_) {}
+    await _logEvent('action_toggle_status', {
+      'action_id': actionId,
+      'is_active': isActive ? 1 : 0,
+    });
   }
 
-  // 9. Reorder Actions
   Future<void> logReorderActions() async {
-    try {
-      if (_analytics == null) return;
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logEvent(name: 'action_reorder');
-    } catch (_) {}
+    await _logEvent('action_reorder');
   }
 
-  // 10. View Stats
   Future<void> logViewStats(String actionId) async {
-    try {
-      if (_analytics == null) return;
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logEvent(
-        name: 'view_stats',
-        parameters: {
-          'action_id': actionId,
-        },
-      );
-    } catch (_) {}
+    await _logEvent('view_stats', {'action_id': actionId});
   }
 
-  // 11. Cloud Restore
   Future<void> logCloudRestore(String platform) async {
-    try {
-      if (_analytics == null) return;
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logEvent(
-        name: 'cloud_restore',
-        parameters: {
-          'platform': platform,
-        },
-      );
-    } catch (_) {}
+    await _logEvent('cloud_restore', {'platform': platform});
   }
 
-  // 12. Language Change
   Future<void> logLanguageChange(String languageCode) async {
-    try {
-      if (_analytics == null) return;
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logEvent(
-        name: 'language_change',
-        parameters: {
-          'language_code': languageCode,
-        },
-      );
-    } catch (_) {}
+    await _logEvent('language_change', {'language_code': languageCode});
   }
 
-  // 13. Tutorial Complete
   Future<void> logTutorialComplete(String screenName) async {
-    try {
-      if (_analytics == null) return;
-      await _analytics!.setAnalyticsCollectionEnabled(true);
-      await _analytics!.logTutorialComplete();
-      await _analytics!.logEvent(
-        name: 'tutorial_complete',
-        parameters: {
-          'screen_name': screenName,
-        },
-      );
-    } catch (_) {}
+    await _logEvent('tutorial_complete', {'screen_name': screenName});
   }
 }

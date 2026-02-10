@@ -11,35 +11,23 @@ class AdService {
 
   AdService._internal();
 
+  // Ad Unit Groups - Determined once at runtime
+  static final _resetUnits = _AdUnit(
+    ios: 'ca-app-pub-2756512315350932/6343692587',
+    android: 'ca-app-pub-2756512315350932/3379112733',
+  );
+
+  static final _editHistoryUnits = _AdUnit(
+    ios: 'ca-app-pub-2756512315350932/8173331309',
+    android: 'ca-app-pub-2756512315350932/2441766122',
+  );
+
+  String get rewardedAdUnitId => _resetUnits.value;
+  String get editHistoryAdUnitId => _editHistoryUnits.value;
+
   RewardedAd? _rewardedAd;
   int _numRewardedLoadAttempts = 0;
   final int maxFailedLoadAttempts = 3;
-
-  // Test IDs (Google provided)
-  final String _iosTestUnitId = 'ca-app-pub-3940256099942544/1712485313';
-  final String _androidTestUnitId = 'ca-app-pub-3940256099942544/5224354917';
-
-  // Production IDs (User provided)
-  final String _iosRealUnitId = 'ca-app-pub-2756512315350932/6343692587';
-  final String _androidRealUnitId = 'ca-app-pub-2756512315350932/3379112733';
-  
-  // Edit History Ad IDs
-  final String _iosEditHistoryUnitId = 'ca-app-pub-2756512315350932/8173331309';
-  final String _androidEditHistoryUnitId = 'ca-app-pub-2756512315350932/2441766122';
-
-  String get rewardedAdUnitId {
-    if (kDebugMode) {
-      return Platform.isAndroid ? _androidTestUnitId : _iosTestUnitId;
-    }
-    return Platform.isAndroid ? _androidRealUnitId : _iosRealUnitId;
-  }
-
-  String get editHistoryAdUnitId {
-    if (kDebugMode) {
-      return Platform.isAndroid ? _androidTestUnitId : _iosTestUnitId;
-    }
-    return Platform.isAndroid ? _androidEditHistoryUnitId : _iosEditHistoryUnitId;
-  }
 
   RewardedAd? _editHistoryAd;
   int _numEditHistoryLoadAttempts = 0;
@@ -116,19 +104,7 @@ class AdService {
   void showEditHistoryAd({required Function onRewardEarned}) {
     if (_editHistoryAd == null) {
       loadEditHistoryAd();
-      // If ad is not ready, maybe just let them edit? 
-      // Or show a message? For now, we'll try to load and return logic is up to caller logic if needed, 
-      // but usually we can't show immediately if not loaded. 
-      // Ideally we should tell the user to try again.
-      // For this implementation, if it fails to show (null), we might just allow it or fail silently. 
-      // Let's assume onRewardEarned should only be called if ad is shown.
-      // But if ad fails to load, user is stuck. 
-      // Often better fallback is to allow it if ad fails in production, but let's stick to strict logic for now unless requested.
-      // Wait, if _editHistoryAd is null, we can't show it. 
-      // Should we trigger onRewardEarned anyway for better UX? 
-      // I'll stick to NOT calling it, but I'll add a print.
-      debugPrint("Edit History Ad not ready yet.");
-      // Just in case, let's try to load it.
+      debugPrint('Edit History Ad not ready yet.');
       return;
     }
 
@@ -148,4 +124,17 @@ class AdService {
     });
     _editHistoryAd = null;
   }
+}
+
+/// Helper class to manage platform and environment specific Ad Unit IDs
+class _AdUnit {
+  final String value;
+
+  _AdUnit({required String ios, required String android})
+      : value = kDebugMode
+            ? (Platform.isAndroid ? _testAndroidId : _testIosId)
+            : (Platform.isAndroid ? android : ios);
+
+  static const String _testIosId = 'ca-app-pub-3940256099942544/1712485313';
+  static const String _testAndroidId = 'ca-app-pub-3940256099942544/5224354917';
 }

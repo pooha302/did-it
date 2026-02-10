@@ -8,7 +8,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 
 import 'providers/action_provider.dart';
-import 'providers/theme_provider.dart';
 import 'providers/locale_provider.dart';
 import 'screens/main_screen.dart';
 import 'services/ad_service.dart';
@@ -37,7 +36,7 @@ void main() async {
     if (e.toString().contains('duplicate-app')) {
       isFirebaseInitialized = true;
     } else {
-      debugPrint("Firebase Initialization Failed: $e");
+      debugPrint('Firebase Initialization Failed: $e');
     }
   }
 
@@ -46,29 +45,28 @@ void main() async {
     await initializeDateFormatting('ko_KR', null);
     await initializeDateFormatting('ja_JP', null);
   } catch (e) {
-    debugPrint("Date Formatting Failed: $e");
+    debugPrint('Date Formatting Failed: $e');
   }
   
   try {
-    await AdService.instance.initialize();
+    await AdService.instance.init();
   } catch (e) {
-    debugPrint("AdService Failed: $e");
+    debugPrint('AdService Failed: $e');
   }
 
   // Register Home Widget Interaction (Always register this)
   try {
-    await HomeWidget.registerBackgroundCallback(
+    await HomeWidget.registerInteractivityCallback(
       homeWidgetBackgroundCallback,
     );
   } catch (e) {
-    debugPrint("HomeWidget Registration Failed: $e");
+    debugPrint('HomeWidget Registration Failed: $e');
   }
   
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ActionProvider()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AppLocaleProvider()),
       ],
       child: const DiditApp(),

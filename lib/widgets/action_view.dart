@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'package:didit/providers/locale_provider.dart';
+import '../providers/locale_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/action.dart';
 import '../providers/action_provider.dart';
-import '../providers/theme_provider.dart';
 import '../constants/app_colors.dart';
 
 class ActionView extends StatelessWidget {
@@ -27,7 +26,6 @@ class ActionView extends StatelessWidget {
     final localeProvider = context.watch<AppLocaleProvider>();
     final state = provider.actionStates[action.id]!;
     final isPositive = state.isPositiveGoal;
-    final isDark = context.isDarkMode;
     
     final double count = state.count.toDouble();
     final double goal = state.goal.toDouble();
@@ -66,7 +64,6 @@ class ActionView extends StatelessWidget {
                 ? constraints.maxWidth 
                 : constraints.maxHeight) * 0.85;
             
-            
             return Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.center,
@@ -79,7 +76,7 @@ class ActionView extends StatelessWidget {
                   height: size,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.03),
+                    color: Colors.white.withValues(alpha: 0.04),
                   ),
                   child: Stack(
                     children: [
@@ -87,7 +84,7 @@ class ActionView extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: baseColor.withOpacity(0.25),
+                            color: baseColor.withValues(alpha: 0.25),
                             width: 3.0,
                           ),
                         ),
@@ -104,7 +101,7 @@ class ActionView extends StatelessWidget {
                             heightFactor: progress,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: baseColor.withOpacity(0.7),
+                                color: baseColor.withValues(alpha: 0.7),
                               ),
                             ),
                           ),
@@ -115,7 +112,7 @@ class ActionView extends StatelessWidget {
                 ),
 
                 // Foreground Content (Icon & Status)
-                Container(
+                SizedBox(
                   width: size,
                   height: size,
                   child: Stack(
@@ -136,7 +133,7 @@ class ActionView extends StatelessWidget {
                                 BoxShadow(
                                   color: (isFailure 
                                       ? const Color(0xFF7F1D1D) 
-                                      : (isWarning ? const Color(0xFF1E293B) : statusColor)).withOpacity(0.4),
+                                      : (isWarning ? const Color(0xFF1E293B) : statusColor)).withValues(alpha: 0.4),
                                   blurRadius: 15,
                                   offset: const Offset(0, 4),
                                 ),
@@ -176,11 +173,11 @@ class ActionView extends StatelessWidget {
                         height: size * 0.22,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: (progress > 0.5) 
-                              ? Colors.white.withOpacity(0.18) 
-                              : (isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.06)),
+                          color: (progress > 0.5)
+                              ? Colors.white.withValues(alpha: 0.18) 
+                              : Colors.white.withValues(alpha: 0.08),
                           border: Border.all(
-                            color: (progress > 0.5) ? Colors.white.withOpacity(0.7) : baseColor.withOpacity(0.35),
+                            color: (progress > 0.5) ? Colors.white.withValues(alpha: 0.7) : baseColor.withValues(alpha: 0.35),
                             width: 2.5,
                           ),
                         ),
@@ -206,7 +203,7 @@ class ActionView extends StatelessWidget {
                               textBaseline: TextBaseline.alphabetic,
                               children: [
                                 Text(
-                                  "${state.count}",
+                                  state.count.toString(),
                                   style: TextStyle(
                                     fontSize: size * 0.16,
                                     fontWeight: FontWeight.w900,
@@ -214,7 +211,7 @@ class ActionView extends StatelessWidget {
                                         ? Colors.black 
                                         : (progress > 0.2) 
                                             ? Colors.white 
-                                            : (isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827)),
+                                            : const Color(0xFFF3F4F6),
                                     letterSpacing: -1,
                                   ),
                                 ).animate(target: count).scale(
@@ -229,13 +226,13 @@ class ActionView extends StatelessWidget {
                                     ),
                                 if (goal > 0)
                                   Text(
-                                    " / ${state.goal}",
+                                    ' / ${state.goal}',
                                     style: TextStyle(
                                       color: (isWarning || isFailure)
-                                          ? Colors.black.withOpacity(0.6)
+                                          ? Colors.black.withValues(alpha: 0.6)
                                           : (progress > 0.2) 
-                                              ? Colors.white.withOpacity(0.8) 
-                                              : (isDark ? Colors.white38 : Colors.black38),
+                                              ? Colors.white.withValues(alpha: 0.8) 
+                                              : Colors.white38,
                                       fontSize: size * 0.08,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -250,9 +247,9 @@ class ActionView extends StatelessWidget {
                           child: Text(
                             localeProvider.tr('tap_to_record'),
                             style: TextStyle(
-                              color: (progress > 0.1) 
-                                  ? Colors.white.withOpacity(0.8) 
-                                  : (isDark ? Colors.white.withOpacity(0.35) : Colors.black.withOpacity(0.3)),
+                              color: (progress > 0.1)
+                                  ? Colors.white.withValues(alpha: 0.8) 
+                                  : Colors.white.withValues(alpha: 0.35),
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
@@ -287,7 +284,7 @@ class ActionView extends StatelessWidget {
                       localeProvider: localeProvider,
                       formatter: _formatLastTapTime,
                       style: TextStyle(
-                        color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.35),
+                        color: Colors.white.withValues(alpha: 0.4),
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.2,
@@ -309,9 +306,9 @@ class ActionView extends StatelessWidget {
     if (difference.inMinutes < 1) {
       return localeProvider.tr('just_now');
     } else if (difference.inMinutes < 60) {
-      return "${difference.inMinutes}${localeProvider.tr('min_ago')}";
+      return '${difference.inMinutes}${localeProvider.tr('min_ago')}';
     } else {
-      return "${difference.inHours}${localeProvider.tr('hour_ago')}";
+      return '${difference.inHours}${localeProvider.tr('hour_ago')}';
     }
   }
 }
