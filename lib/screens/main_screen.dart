@@ -308,8 +308,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _setupMidnightTimer();
       }
     });
-
-    debugPrint("🕒 Midnight timer setup: triggers in ${durationUntilMidnight.inHours}h ${durationUntilMidnight.inMinutes % 60}m");
   }
 
   void _showDailyResetNotification() {

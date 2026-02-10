@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 
 @pragma('vm:entry-point')
 Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
-  debugPrint('WIDGET: Background callback triggered with URI: $uri');
   final prefs = await SharedPreferences.getInstance();
   await prefs.reload();
   const groupId = 'group.com.pooha302.didit';
@@ -34,8 +33,6 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
       final nextActionId = order[nextIndex];
       // Save specific selection for THIS widget instance
       await HomeWidget.saveWidgetData<String>('selected_id_$widgetId', nextActionId);
-      
-      debugPrint('WIDGET: Cycled widget $widgetId to $nextActionId');
       
       await HomeWidget.updateWidget(
         name: 'DidItWidgetProvider',
@@ -77,8 +74,6 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
         
         await prefs.setString('action_states_v2', jsonEncode(states));
         await prefs.setString('last_saved_date', today);
-        
-        debugPrint('WIDGET: Reset complete. All counts set to 0.');
       }
       
       if (targetId == null || !states.containsKey(targetId)) {
@@ -105,8 +100,6 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
         if (targetId == (await HomeWidget.getWidgetData<String>('active_action_id'))) {
             await HomeWidget.saveWidgetData<int>('count', stateMap['count']);
         }
-
-        debugPrint('WIDGET: Incremented $targetId to ${stateMap['count']}');
 
         await HomeWidget.updateWidget(
           name: 'DidItWidgetProvider',

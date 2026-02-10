@@ -24,65 +24,46 @@ bool isFirebaseInitialized = false;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  debugPrint("🚀 Starting App Initialization...");
-  
   try {
-    debugPrint("🔥 Initializing Firebase...");
     if (Firebase.apps.isEmpty) {
-      if (Platform.isIOS) {
-        await Firebase.initializeApp(
-          options: ApiKeys.iosFirebaseOptions,
-        );
-      } else {
-        await Firebase.initializeApp(
-          options: ApiKeys.androidFirebaseOptions,
-        );
-      }
+      await Firebase.initializeApp(
+        options: Platform.isIOS
+            ? ApiKeys.iosFirebaseOptions
+            : ApiKeys.androidFirebaseOptions,
+      );
     }
-    await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     isFirebaseInitialized = true;
-    debugPrint("✅ Firebase Initialized");
   } catch (e) {
-    debugPrint("❌ Firebase Initialization Failed: $e");
-    // If it's already initialized, we can still consider it a success
-    if (Firebase.apps.isNotEmpty) {
+    if (e.toString().contains('duplicate-app')) {
       isFirebaseInitialized = true;
-      debugPrint("⚠️ Using existing Firebase instance");
+    } else {
+      debugPrint("Firebase Initialization Failed: $e");
     }
   }
 
   try {
-    debugPrint("🌐 Initializing Date Formatting...");
-    const locales = ['ko', 'en', 'ja', 'zh', 'es', 'fr', 'de'];
-    for (final locale in locales) {
-      await initializeDateFormatting(locale, null);
-    }
-    debugPrint("✅ Date Formatting Initialized");
+    await initializeDateFormatting('en_US', null);
+    await initializeDateFormatting('ko_KR', null);
+    await initializeDateFormatting('ja_JP', null);
   } catch (e) {
-    debugPrint("❌ Date Formatting Failed: $e");
+    debugPrint("Date Formatting Failed: $e");
   }
   
   try {
-    debugPrint("💰 Initializing AdService...");
-    await AdService.instance.init();
-    debugPrint("✅ AdService Initialized");
+    await AdService.instance.initialize();
   } catch (e) {
-    debugPrint("❌ AdService Failed: $e");
+    debugPrint("AdService Failed: $e");
   }
 
   // Register Home Widget Interaction (Always register this)
   try {
-    debugPrint("🏠 Registering HomeWidget Background Callback...");
-    if (Platform.isIOS) {
-      await HomeWidget.setAppGroupId('group.com.pooha302.didit');
-    }
-    await HomeWidget.registerBackgroundCallback(homeWidgetBackgroundCallback);
-    debugPrint("✅ HomeWidget Background Callback Registered");
+    await HomeWidget.registerBackgroundCallback(
+      homeWidgetBackgroundCallback,
+    );
   } catch (e) {
-    debugPrint("❌ HomeWidget Registration Failed: $e");
+    debugPrint("HomeWidget Registration Failed: $e");
   }
   
-  debugPrint("🏁 Running App...");
   runApp(
     MultiProvider(
       providers: [

@@ -283,13 +283,11 @@ class ActionProvider with ChangeNotifier {
 
     // Save EVERYTHING into one atomic JSON string
     final jsonSync = jsonEncode(activeActionsData);
-    final successJson = await HomeWidget.saveWidgetData<String>('actions_json', jsonSync);
+    await HomeWidget.saveWidgetData<String>('actions_json', jsonSync);
     
     // Save current selection and the list of IDs for legacy/compatibility
     await HomeWidget.saveWidgetData<String>('active_action_id', activeAction.id);
     await HomeWidget.saveWidgetData<String>('action_ids', activeActionIds.join(','));
-
-    debugPrint("WIDGET SYNC: JSON ($successJson): $jsonSync");
     
     await HomeWidget.updateWidget(
       name: 'DidItWidgetProvider',
@@ -502,9 +500,6 @@ class ActionProvider with ChangeNotifier {
     if (dateStr == todayStr) {
       state.count = newCount;
     }
-    
-    // Log manual update
-    debugPrint("Manual history update for $id on $dateStr: $newCount");
 
     _saveData();
     notifyListeners();
@@ -631,7 +626,6 @@ class ActionProvider with ChangeNotifier {
         
         // If the count on disk is higher than in memory, update memory
         if (currentState != null && newState.count > currentState.count) {
-          debugPrint("Syncing ${entry.key} from disk: App(${currentState.count}) -> Disk(${newState.count})");
           _actionStates[entry.key] = newState;
           hasChanges = true;
         }
@@ -646,7 +640,6 @@ class ActionProvider with ChangeNotifier {
         
         final widgetCount = await HomeWidget.getWidgetData<int>('count_$id');
         if (widgetCount != null && widgetCount > state.count) {
-          debugPrint("Syncing $id from widget individual key: App(${state.count}) -> Widget($widgetCount)");
           state.count = widgetCount;
           
           // Read lastTapTime from widget data
