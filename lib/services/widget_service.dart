@@ -93,6 +93,7 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
       if (targetId != null) {
         final stateMap = states[targetId];
         stateMap['count'] = (stateMap['count'] ?? 0) + 1;
+        stateMap['lastTapTime'] = DateTime.now().toIso8601String();
         
         final history = Map<String, dynamic>.from(stateMap['history'] ?? {});
         history[today] = stateMap['count'];

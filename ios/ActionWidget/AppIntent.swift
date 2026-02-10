@@ -164,10 +164,34 @@ struct IncrementIntent: AppIntent {
     }
     
     func perform() async throws -> some IntentResult {
-        let defaults = UserDefaults(suiteName: "group.com.pooha302.didit")
-        let currentCount = defaults?.integer(forKey: "count_\(actionId)") ?? 0
+        let groupDefaults = UserDefaults(suiteName: "group.com.pooha302.didit")
+        let standardDefaults = UserDefaults.standard
+        
+        // Update count in UserDefaults
+        let currentCount = groupDefaults?.integer(forKey: "count_\(actionId)") ?? 0
         let newCount = currentCount + 1
-        defaults?.set(newCount, forKey: "count_\(actionId)")
+        groupDefaults?.set(newCount, forKey: "count_\(actionId)")
+        
+        // Update lastTapTime in UserDefaults
+        let now = ISO8601DateFormatter().string(from: Date())
+        groupDefaults?.set(now, forKey: "lastTapTime_\(actionId)")
+        
+        // Update action_states_v2 JSON for app sync
+        if let statesString = standardDefaults.string(forKey: "action_states_v2"),
+           let statesData = statesString.data(using: .utf8),
+           var states = try? JSONSerialization.jsonObject(with: statesData) as? [String: [String: Any]] {
+            
+            if var actionState = states[actionId] {
+                actionState["count"] = newCount
+                actionState["lastTapTime"] = now
+                states[actionId] = actionState
+                
+                if let updatedData = try? JSONSerialization.data(withJSONObject: states),
+                   let updatedString = String(data: updatedData, encoding: .utf8) {
+                    standardDefaults.set(updatedString, forKey: "action_states_v2")
+                }
+            }
+        }
         
         // Signal WidgetKit to reload all timelines
         WidgetCenter.shared.reloadAllTimelines()

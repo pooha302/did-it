@@ -648,7 +648,18 @@ class ActionProvider with ChangeNotifier {
         if (widgetCount != null && widgetCount > state.count) {
           debugPrint("Syncing $id from widget individual key: App(${state.count}) -> Widget($widgetCount)");
           state.count = widgetCount;
-          state.lastTapTime = DateTime.now(); // Approximate time
+          
+          // Read lastTapTime from widget data
+          final widgetLastTapTime = await HomeWidget.getWidgetData<String>('lastTapTime_$id');
+          if (widgetLastTapTime != null) {
+            try {
+              state.lastTapTime = DateTime.parse(widgetLastTapTime);
+            } catch (e) {
+              state.lastTapTime = DateTime.now(); // Fallback
+            }
+          } else {
+            state.lastTapTime = DateTime.now(); // Fallback if not available
+          }
           
           final today = DateTime.now().toIso8601String().split('T')[0];
           state.history = Map.from(state.history)..[today] = state.count;
