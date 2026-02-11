@@ -144,6 +144,11 @@ class ActionProvider with ChangeNotifier {
         _actionStates[entry.key] = ActionData.fromJson(entry.value);
       }
 
+      // If we have saved data but no saved date, force a reset check by setting an old date
+      if (savedDate == null) {
+        _currentDateStr = "2000-01-01";
+      }
+
       await checkAndResetDailyData();
       await syncFromWidget();
     }
@@ -371,7 +376,10 @@ class ActionProvider with ChangeNotifier {
     updateHomeWidget();
   }
 
-  void incrementActionCount(String id) {
+  Future<void> incrementActionCount(String id) async {
+    // Proactively check for daily reset before incrementing to ensure first tap of day is clean
+    await checkAndResetDailyData();
+
     final state = _actionStates[id];
     if (state != null) {
       final now = DateTime.now();
@@ -385,7 +393,10 @@ class ActionProvider with ChangeNotifier {
     }
   }
 
-  void resetCount() {
+  Future<void> resetCount() async {
+    // Ensure we are on the current day before resetting anything
+    await checkAndResetDailyData();
+
     if (activeState.resetCredits > 0) {
       activeState.count = 0;
       activeState.resetCredits--;
@@ -611,6 +622,9 @@ class ActionProvider with ChangeNotifier {
   }
 
   Future<void> syncFromWidget() async {
+    // Proactively check for daily reset before syncing to handle overnight widget interactions correctly
+    await checkAndResetDailyData();
+
     const groupId = 'group.com.pooha302.didit';
     await HomeWidget.setAppGroupId(groupId);
     final prefs = await SharedPreferences.getInstance();

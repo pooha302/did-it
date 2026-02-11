@@ -68,6 +68,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late PageController _pageController;
   Timer? _midnightTimer;
+  Timer? _periodicTimer;
   
   // Keys for tutorial
   final GlobalKey _resetKey = GlobalKey();
@@ -94,6 +95,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addObserver(this);
     _setupMidnightTimer();
+    _setupPeriodicCheck();
+  }
+
+  void _setupPeriodicCheck() {
+    _periodicTimer?.cancel();
+    _periodicTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) {
+        context.read<ActionProvider>().checkAndResetDailyData().then((didReset) {
+          if (didReset) {
+            _showDailyResetNotification();
+          }
+        });
+      }
+    });
   }
 
   Future<void> _checkAndShowTutorial() async {
@@ -267,6 +282,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _midnightTimer?.cancel();
+    _periodicTimer?.cancel();
     _pageController.dispose();
     super.dispose();
   }

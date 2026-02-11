@@ -50,16 +50,20 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
     if (savedStates != null) {
       final Map<String, dynamic> states = jsonDecode(savedStates);
       final today = DateTime.now().toIso8601String().split('T')[0];
-      final lastSavedDate = prefs.getString('last_saved_date');
+      final lastSavedDate = prefs.getString('last_saved_date') ?? (savedStates != null ? '2000-01-01' : today);
       
-      if (lastSavedDate != null && lastSavedDate != today) {
+      if (lastSavedDate != today) {
         debugPrint('WIDGET: Date changed from $lastSavedDate to $today. Resetting all counts...');
         
         for (var entry in states.entries) {
           final stateMap = entry.value;
           final history = Map<String, dynamic>.from(stateMap['history'] ?? {});
           
-          history[lastSavedDate] = stateMap['count'] ?? 0;
+          // Only save to history if the date is recent/relevant (not our placeholder)
+          if (lastSavedDate != '2000-01-01') {
+            history[lastSavedDate] = stateMap['count'] ?? 0;
+          }
+          
           stateMap['history'] = history;
           stateMap['count'] = 0;
           stateMap['lastTapTime'] = null;
