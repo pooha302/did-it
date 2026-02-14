@@ -36,68 +36,55 @@ void main() {
       expect(prefs.getString('last_saved_date'), today);
     });
 
-    test('checkAndResetDailyData should reset counts if date has changed', () async {
+    test('checkAndResetDailyData should reset counts automatically during initialization', () async {
       final today = DateTime.now().toIso8601String().split('T')[0];
       final yesterday = DateTime.now().subtract(Duration(days: 1)).toIso8601String().split('T')[0];
       
-      // Set initial values in prefs
+      // Save data from yesterday (simulate old data being present before app start)
+      final states = {
+        'coffee': ActionData(count: 5, isActive: true).toJson()
+      };
+      await prefs.setString('action_states_v2', jsonEncode(states));
       await prefs.setString('last_saved_date', yesterday);
       
-      // ActionProvider initialization will trigger _loadData which calls checkAndResetDailyData
+      // Act: Initialization triggers checkAndResetDailyData via _init
       final provider = ActionProvider();
       await Future.delayed(Duration(milliseconds: 100));
 
-      // Manually add some count for coffee
-      final coffeeState = provider.actionStates['coffee']!;
-      coffeeState.count = 5;
-      coffeeState.isActive = true;
-      
-      // Now intentionally call checkAndResetDailyData with a different current state
-      // (Provider thinks it's yesterday because we set it in prefs before init)
-      
-      // Act: Date changes to today
-      final didReset = await provider.checkAndResetDailyData();
-      
-      // Assert
-      expect(didReset, isTrue);
+      // Assert: It should have reset automatically
       expect(provider.actionStates['coffee']!.count, 0);
       expect(provider.actionStates['coffee']!.history[yesterday], 5);
       expect(prefs.getString('last_saved_date'), today);
     });
 
-    test('Incrementing should trigger reset if date changed since last tap', () async {
+    test('Incrementing should NOT trigger reset if already reset today', () async {
       final today = DateTime.now().toIso8601String().split('T')[0];
-      final yesterday = DateTime.now().subtract(Duration(days: 1)).toIso8601String().split('T')[0];
-      
-      await prefs.setString('last_saved_date', yesterday);
       
       final provider = ActionProvider();
       await Future.delayed(Duration(milliseconds: 100));
       
-      // Simulate coffee being active but at count 5 yesterday (which hasn't been reset yet in memory)
-      provider.actionStates['coffee']!.count = 5;
+      provider.actionStates['coffee']!.count = 2; // Simulate some counts today
       
       // Act: User taps coffee today
       await provider.incrementActionCount('coffee');
       
-      // Assert: It should have reset (to 0) then incremented (to 1)
-      expect(provider.actionStates['coffee']!.count, 1);
-      expect(provider.actionStates['coffee']!.history[yesterday], 5);
+      // Assert: It should NOT reset (count should be 3, not 1)
+      expect(provider.actionStates['coffee']!.count, 3);
       expect(prefs.getString('last_saved_date'), today);
     });
 
-    test('resetCredits should be replenished to 1 on daily reset if it was 0', () async {
+    test('resetCredits should be replenished during automatic initialization reset', () async {
       final yesterday = DateTime.now().subtract(Duration(days: 1)).toIso8601String().split('T')[0];
+      
+      final states = {
+        'coffee': ActionData(count: 5, isActive: true, resetCredits: 0).toJson() // Used credit yesterday
+      };
+      await prefs.setString('action_states_v2', jsonEncode(states));
       await prefs.setString('last_saved_date', yesterday);
       
+      // Act: Initialization triggers reset
       final provider = ActionProvider();
       await Future.delayed(Duration(milliseconds: 100));
-      
-      // Yesterday user used their reset
-      provider.actionStates['coffee']!.resetCredits = 0;
-      
-      // Act: Daily reset happens
-      await provider.checkAndResetDailyData();
       
       // Assert: Credit should be back to 1
       expect(provider.actionStates['coffee']!.resetCredits, 1);
@@ -115,7 +102,7 @@ void main() {
       final provider = ActionProvider();
       await Future.delayed(Duration(milliseconds: 100));
       
-      // It should have detected missing date and force-reset
+      // It should have detected missing date (internal fallback to 2000-01-01) and reset
       expect(provider.actionStates['coffee']!.count, 0);
       expect(prefs.getString('last_saved_date'), today);
     });

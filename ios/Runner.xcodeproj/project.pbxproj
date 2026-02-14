@@ -642,6 +642,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 67U938P483;
 				ENABLE_BITCODE = NO;
+				FLUTTER_TREE_SHAKE_ICONS = false;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Did it";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -975,6 +976,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 67U938P483;
 				ENABLE_BITCODE = NO;
+				FLUTTER_TREE_SHAKE_ICONS = false;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Did it";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -1009,6 +1011,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 67U938P483;
 				ENABLE_BITCODE = NO;
+				FLUTTER_TREE_SHAKE_ICONS = false;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Did it";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";

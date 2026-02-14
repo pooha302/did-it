@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -61,8 +62,22 @@ class ActionProvider with ChangeNotifier {
     return _actionStates[actions[safeIndex].id] ?? ActionData();
   }
 
+  bool _isResetting = false;
+  String _currentDateStr = '';
+  Completer<void>? _dataLoadCompleter;
+
   ActionProvider() {
-    _loadData();
+    _init();
+  }
+
+  Future<void> _init() async {
+    _dataLoadCompleter = Completer<void>();
+    await _loadData();
+    _dataLoadCompleter!.complete();
+    
+    // After data is loaded and completer is finished, perform the initial reset check
+    await checkAndResetDailyData();
+    await syncFromWidget();
   }
 
   void setActiveActionIndex(int index) {
@@ -105,9 +120,6 @@ class ActionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  bool _isResetting = false;
-  String _currentDateStr = '';
-
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
     final savedStates = prefs.getString('action_states_v2');
@@ -148,9 +160,6 @@ class ActionProvider with ChangeNotifier {
       if (savedDate == null) {
         _currentDateStr = "2000-01-01";
       }
-
-      await checkAndResetDailyData();
-      await syncFromWidget();
     }
     
     // Ensure all current baseActions (not deleted) and custom actions are in the order list
@@ -185,11 +194,16 @@ class ActionProvider with ChangeNotifier {
 
   /// Checks if the date has changed since the last save and resets daily data if necessary.
   Future<bool> checkAndResetDailyData({bool force = false}) async {
-    if (_isResetting) return false;
+    // Ensure data is loaded before checking for reset
+    if (_dataLoadCompleter != null) {
+      await _dataLoadCompleter!.future;
+    }
 
+    if (_isResetting) return false;
+    
     final today = DateTime.now().toIso8601String().split('T')[0];
     
-    // Use in-memory date if available, otherwise fetch from prefs (should overlap)
+    // Ensure we have the latest date string from memory or prefs
     if (_currentDateStr.isEmpty) {
         final prefs = await SharedPreferences.getInstance();
         _currentDateStr = prefs.getString('last_saved_date') ?? today;
